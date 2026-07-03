@@ -1,0 +1,26 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  detection-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive   # pull the pinned fair2-spec
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+      - name: Detection tests (offline; agent-fix tests are not run in CI)
+        run: pytest -q
+      - name: Golden example must validate + load
+        run: |
+          fair2-validate fair2-spec/examples/example-1/borja2025.json
