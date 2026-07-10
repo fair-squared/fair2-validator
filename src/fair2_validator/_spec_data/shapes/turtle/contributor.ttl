@@ -1,0 +1,46 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <https://schema.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix fair2s: <https://fair2.ai/shapes/> .
+@prefix fair2: <https://fair2.ai/ns/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+fair2s:PersonOrOrganizationShape
+    a sh:NodeShape ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:node fair2s:TextShape ;
+    ] ;
+    sh:property [
+        sh:path schema:affiliation ;
+        sh:node fair2s:OrganizationShape ;
+    ] .
+
+fair2s:OrganizationShape
+    a sh:NodeShape ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:node fair2s:TextShape ;
+    ] .
+
+fair2s:ContributorRoleShape
+    a sh:NodeShape ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:or (
+        [ sh:property [ sh:path schema:name ; sh:minCount 1 ; sh:node fair2s:TextShape ] ]
+        [ sh:property [ sh:path schema:propertyID ; sh:minCount 1 ; sh:node fair2s:TextShape ] ]
+        [ sh:property [ sh:path rdfs:label ; sh:minCount 1 ; sh:node fair2s:TextShape ] ]
+    ) .
+
+fair2s:ContributorShape
+    a sh:NodeShape ;
+    sh:node fair2s:PersonOrOrganizationShape ;
+    sh:property [
+        sh:path prov:hadRole ;
+        sh:minCount 1 ;
+        sh:node fair2s:ContributorRoleShape ;
+    ] .

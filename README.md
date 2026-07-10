@@ -18,14 +18,25 @@ reconcile the reference example, as a reusable tool:
 ## Install
 
 ```bash
-git clone --recurse-submodules <this repo>
-cd fair2-validator
-pip install -e .
+pip install fair2-validator
 ```
 
-The canonical spec is pinned as the `fair2-spec` git submodule. On a fresh clone
-without `--recurse-submodules`, run `git submodule update --init`. Override the
-spec location with `--spec PATH` or `FAIR2_SPEC_PATH`.
+The pinned FAIR² spec (shapes + context + golden example) is **vendored into the
+package**, so a plain `pip install` is self-contained — no submodule needed. The
+agent-fix layer needs an extra: `pip install "fair2-validator[agent]"`.
+
+For a development checkout (spec as an editable git submodule):
+
+```bash
+git clone --recurse-submodules <this repo>
+cd fair2-validator
+pip install -e ".[dev,agent]"
+```
+
+Spec resolution order: `--spec PATH` → `FAIR2_SPEC_PATH` → the `fair2-spec`
+submodule → a sibling `../fair2-spec` checkout → the copy vendored in the
+package. So a dev checkout uses the live submodule, while an installed wheel
+falls back to the vendored spec.
 
 ## Usage
 
@@ -77,14 +88,40 @@ The submodule pins an exact, reproducible spec commit. Advance it only when the
 validator still passes against it:
 
 ```bash
-make update-spec   # bumps the submodule, runs tests + validates the golden example
+make update-spec   # bumps the submodule, runs tests + validates the golden example,
+                   # and re-vendors the spec into the package (src/fair2_validator/_spec_data)
 ```
 
-Commit the submodule bump only after that succeeds.
+Commit the submodule bump **and** the re-vendored `_spec_data/` only after that
+succeeds. (`make sync-spec` re-vendors on its own; a test guards against drift.)
 
 ## Development
 
 ```bash
 make test       # offline detection tests (agent-fix tests are not run in CI)
 make validate   # validate the canonical golden example
+```
+
+## Publishing to PyPI
+
+Releases are cut by pushing a version tag; a GitHub Actions workflow
+(`.github/workflows/release.yml`) builds the artifacts and publishes them via
+PyPI [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (OIDC — no
+stored token).
+
+```bash
+# 1. bump `version` in pyproject.toml, commit
+# 2. tag and push
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+One-time PyPI setup: on the project's *Publishing* settings, add a GitHub trusted
+publisher (owner `fair-squared`, repo `fair2-validator`, workflow `release.yml`,
+environment `pypi`). To build/publish manually instead:
+
+```bash
+make build                  # re-vendors spec, builds sdist+wheel, verifies contents
+python -m twine upload -r testpypi dist/*   # smoke-test on TestPyPI first
+python -m twine upload dist/*
 ```

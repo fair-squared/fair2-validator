@@ -1,0 +1,22 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <https://schema.org/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix fair2s: <https://fair2.ai/shapes/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+fair2s:DomainShape
+    a sh:NodeShape ;
+    sh:nodeKind sh:IRI ;
+
+    sh:property [
+        sh:targetClass schema:Thing ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:node fair2s:TextShape ;
+    ] ;
+
+    sh:property [
+        sh:path prov:wasAttributedTo ;
+        sh:node fair2s:ContactShape ;
+        sh:description "The expert or authority who classified this dataset."
+    ] .

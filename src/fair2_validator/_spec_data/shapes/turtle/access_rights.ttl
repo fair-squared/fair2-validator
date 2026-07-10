@@ -1,0 +1,31 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <https://schema.org/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix fair2s: <https://fair2.ai/shapes/> .
+
+fair2s:AccessRightsShape
+    a sh:NodeShape ;
+    sh:targetClass schema:DefinedTerm ;
+    sh:nodeKind sh:IRI ;
+
+    sh:property [
+        sh:path schema:name ;
+        sh:node fair2s:TextShape ;
+        sh:minCount 1
+    ] ;
+
+    sh:property [
+        sh:path skos:definition ;
+        sh:node fair2s:TextShape ;
+        sh:minCount 1
+    ] ;
+
+    sh:property [
+        sh:path skos:note ;
+        sh:node fair2s:TextShape
+    ] ;
+
+    sh:property [
+        sh:path schema:url ;
+        sh:node fair2s:IdentifierShape
+    ] .

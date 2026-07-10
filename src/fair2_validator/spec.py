@@ -3,8 +3,10 @@
 Resolution precedence:
   1. explicit --spec / spec_path argument
   2. FAIR2_SPEC_PATH environment variable
-  3. the bundled `fair2-spec/` submodule next to the repo root
+  3. the `fair2-spec/` submodule next to the repo root (dev checkout)
   4. a sibling `../fair2-spec` checkout
+  5. the spec vendored inside the package (`_spec_data/`), so a plain
+     `pip install fair2-validator` works without the submodule.
 """
 from __future__ import annotations
 
@@ -38,7 +40,10 @@ class Spec:
     def version(self) -> str:
         """The spec version as a git tag only — never an intermediate
         `<tag>-N-g<sha>` describe string. Releases are tag-only, so a pinned
-        spec that isn't exactly on a tag is reported as `untagged@<sha>`."""
+        spec that isn't exactly on a tag is reported as `untagged@<sha>`.
+
+        A vendored copy (inside the wheel) has no `.git`; its version is read
+        from the `VERSION` file written at sync time."""
         def _git(*args: str) -> str:
             try:
                 out = subprocess.run(["git", "-C", str(self.root), *args],
@@ -52,6 +57,11 @@ class Spec:
         pointed = _git("tag", "--points-at", "HEAD")         # tag(s) at this commit
         if pointed:
             return pointed.splitlines()[0]
+        vfile = self.root / "VERSION"                        # vendored copy
+        if vfile.is_file():
+            v = vfile.read_text().strip()
+            if v:
+                return v
         sha = _git("rev-parse", "--short", "HEAD")
         return f"untagged@{sha}" if sha else "unknown"
 
@@ -72,6 +82,8 @@ def find_spec(spec_path: str | os.PathLike | None = None) -> Spec:
     repo_root = here.parents[2]
     candidates.append(repo_root / "fair2-spec")
     candidates.append(repo_root.parent / "fair2-spec")
+    # last resort: the spec vendored inside the installed package
+    candidates.append(here.parent / "_spec_data")
 
     for c in candidates:
         c = c.expanduser()

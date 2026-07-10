@@ -1,14 +1,31 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "fair2-validator"
-version = "0.1.0"
+version = "0.2.0"
 description = "Validate (and agent-fix) FAIR² JSON-LD against the canonical fair2-spec"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "CC-BY-4.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [
+    { name = "Cristina E. Gonzalez-Espinoza", email = "cristina.gonzalez@senscience.ai" },
+]
+keywords = ["FAIR", "FAIR2", "JSON-LD", "SHACL", "croissant", "metadata", "validation", "RDF"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Quality Assurance",
+]
 dependencies = [
     "pyshacl>=0.20.3",
     "rdflib>=6.3.2",
@@ -19,11 +36,25 @@ dependencies = [
 agent = ["anthropic>=0.40"]
 dev = ["pytest>=7"]
 
+[project.urls]
+Homepage = "https://github.com/fair-squared/fair2-validator"
+Repository = "https://github.com/fair-squared/fair2-validator"
+Issues = "https://github.com/fair-squared/fair2-validator/issues"
+Specification = "https://github.com/fair-squared/fair2-spec"
+
 [project.scripts]
 fair2-validate = "fair2_validator.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+# vendor the pinned fair2-spec so `pip install` is self-contained (see scripts/sync_spec.py)
+fair2_validator = [
+    "_spec_data/VERSION",
+    "_spec_data/**/*.ttl",
+    "_spec_data/**/*.json",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

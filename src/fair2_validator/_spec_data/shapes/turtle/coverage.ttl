@@ -1,0 +1,49 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <https://schema.org/> .
+@prefix fair2: <https://fair2.ai/ns/> .
+@prefix fair2s: <https://fair2.ai/shapes/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+fair2s:SpatialCoverageShape
+    a sh:NodeShape ;
+    sh:property [ sh:path schema:name ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path schema:description ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path schema:identifier ; sh:node fair2s:IdentifierShape ] ;
+    sh:property [
+        sh:path schema:geo ;
+        sh:or (
+            [ sh:node fair2s:GeoShapeShape ]
+            [ sh:node schema:GeoCoordinatesShape ]
+        ) ;
+    ] ;
+    sh:property [
+        sh:path schema:geoWithin ;
+        sh:nodeKind sh:BlankNodeOrIRI ;
+    ] ;
+    sh:property [
+        sh:path schema:containsPlace ;
+        sh:node fair2s:SpatialCoverageShape ;
+    ] .
+
+fair2s:GeoShapeShape
+    a sh:NodeShape ;
+    sh:or (
+        [ sh:property [ sh:path schema:box ;     sh:minCount 1 ; sh:node fair2s:TextShape ] ]
+        [ sh:property [ sh:path schema:polygon ; sh:minCount 1 ; sh:node fair2s:TextShape ] ]
+        [ sh:property [ sh:path schema:line ;    sh:minCount 1 ; sh:node fair2s:TextShape ] ]
+        [ sh:property [ sh:path schema:circle ;  sh:minCount 1 ; sh:node fair2s:TextShape ] ]
+    ) ;
+    sh:message "A GeoShape must declare at least one geometry (box, polygon, line, or circle)." .
+
+schema:GeoCoordinatesShape
+    a sh:NodeShape ;
+    sh:property [
+        sh:path schema:latitude ;
+        sh:minCount 1 ;
+        sh:datatype xsd:float ;
+    ] ;
+    sh:property [
+        sh:path schema:longitude ;
+        sh:minCount 1 ;
+        sh:datatype xsd:float ;
+    ] .

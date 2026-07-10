@@ -1,0 +1,178 @@
+{
+    "@context": {
+      "@vocab": "http://www.w3.org/ns/shacl#",
+      "alternativePath": {
+        "@type": "@id",
+        "@container": "@list"
+      },
+      "and": {
+        "@type": "@id",
+        "@container": "@list"
+      },
+      "annotationProperty": {
+        "@type": "@id"
+      },
+      "class": {
+        "@type": "@id"
+      },
+      "comment": "rdfs:comment",
+      "datatype": {
+        "@type": "@id"
+      },
+      "declare": {
+        "@type": "@id"
+      },
+      "derivedValues": {
+        "@type": "@id"
+      },
+      "detail": {
+        "@type": "@id"
+      },
+      "disjoint": {
+        "@type": "@id"
+      },
+      "equals": {
+        "@type": "@id"
+      },
+      "group": {
+        "@type": "@id"
+      },
+      "ignoredProperties": {
+        "@type": "@id",
+        "@container": "@list"
+      },
+      "in": {
+        "@container": "@list"
+      },
+      "inversePath": {
+        "@type": "@id"
+      },
+      "languageIn": {
+        "@container": "@list"
+      },
+      "lessThan": {
+        "@type": "@id"
+      },
+      "lessThanOrEquals": {
+        "@type": "@id"
+      },
+      "maxCount": {
+        "@type": "xsd:integer"
+      },
+      "maxLength": {
+        "@type": "xsd:integer"
+      },
+      "minCount": {
+        "@type": "xsd:integer"
+      },
+      "minLength": {
+        "@type": "xsd:integer"
+      },
+      "namespace": {
+        "@type": "xsd:anyURI"
+      },
+      "node": {
+        "@type": "@id"
+      },
+      "nodeKind": {
+        "@type": "@id"
+      },
+      "nodeValidator": {
+        "@type": "@id"
+      },
+      "not": {
+        "@type": "@id"
+      },
+      "oneOrMorePath": {
+        "@type": "@id"
+      },
+      "or": {
+        "@type": "@id",
+        "@container": "@list"
+      },
+      "parameter": {
+        "@type": "@id"
+      },
+      "path": {
+        "@type": "@id"
+      },
+      "prefixes": {
+        "@type": "@id"
+      },
+      "property": {
+        "@type": "@id"
+      },
+      "propertyValidator": {
+        "@type": "@id"
+      },
+      "qualifiedMaxCount": {
+        "@type": "xsd:integer"
+      },
+      "qualifiedMinCount": {
+        "@type": "xsd:integer"
+      },
+      "qualifiedValueShape": {
+        "@type": "@id"
+      },
+      "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+      "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+      "result": {
+        "@type": "@id"
+      },
+      "resultAnnotation": {
+        "@type": "@id"
+      },
+      "resultPath": {
+        "@type": "@id"
+      },
+      "resultSeverity": {
+        "@type": "@id"
+      },
+      "returnType": {
+        "@type": "@id"
+      },
+      "severity": {
+        "@type": "@id"
+      },
+      "sh": "http://www.w3.org/ns/shacl#",
+      "shapesGraph": {
+        "@type": "@id"
+      },
+      "sourceConstraintComponent": {
+        "@type": "@id"
+      },
+      "sourceShape": {
+        "@type": "@id"
+      },
+      "sparql": {
+        "@type": "@id"
+      },
+      "target": {
+        "@type": "@id"
+      },
+      "targetClass": {
+        "@type": "@id"
+      },
+      "targetObjectsOf": {
+        "@type": "@id"
+      },
+      "targetSubjectsOf": {
+        "@type": "@id"
+      },
+      "validator": {
+        "@type": "@id"
+      },
+      "xone": {
+        "@type": "@id",
+        "@container": "@list"
+      },
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "zeroOrMorePath": {
+        "@type": "@id"
+      },
+      "zeroOrOnePath": {
+        "@type": "@id"
+      }
+    },
+    "@id": "https://fair2.ai/spec/shacl_context"
+  }

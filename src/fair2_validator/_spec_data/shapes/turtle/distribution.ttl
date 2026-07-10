@@ -1,0 +1,36 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <https://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix cr: <http://mlcommons.org/croissant/> .
+@prefix fair2s: <https://fair2.ai/shapes/> .
+
+schema:DistributionShape
+    a sh:NodeShape ;
+    sh:targetClass cr:FileObject ;
+    sh:nodeKind sh:IRI ;
+
+    sh:property [
+        sh:path schema:name ;
+        sh:node fair2s:TextShape ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:contentUrl ;
+        sh:node fair2s:IdentifierShape ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:encodingFormat ;
+        sh:node fair2s:TextShape ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:contentSize ;
+        sh:node fair2s:TextShape ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:sha256 ;
+        sh:node fair2s:TextShape ;
+        sh:minCount 1 ;
+    ] .

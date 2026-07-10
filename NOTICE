@@ -1,0 +1,22 @@
+fair2-validator
+Copyright 2026 Cristina E. Gonzalez-Espinoza and the fair-squared contributors
+
+This product includes software developed by the fair-squared project
+(https://github.com/fair-squared/fair2-validator), licensed under the
+Apache License, Version 2.0.
+
+------------------------------------------------------------------------
+Bundled specification data
+------------------------------------------------------------------------
+The files under `src/fair2_validator/_spec_data/` are vendored, unmodified,
+from the FAIR² specification (fair2-spec):
+
+    https://github.com/fair-squared/fair2-spec
+
+They are NOT covered by the Apache-2.0 license of this package. They are
+distributed under the Creative Commons Attribution 4.0 International
+license (CC-BY-4.0):
+
+    https://creativecommons.org/licenses/by/4.0/
+
+Attribution: the FAIR² specification, fair-squared project.

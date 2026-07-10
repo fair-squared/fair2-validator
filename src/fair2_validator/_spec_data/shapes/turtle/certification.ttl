@@ -1,0 +1,44 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <https://schema.org/> .
+@prefix fair2: <https://fair2.ai/ns/> .
+@prefix fair2s: <https://fair2.ai/shapes/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+fair2s:CertificationShape
+    a sh:NodeShape ;
+    sh:targetClass fair2:Certification ;
+
+    sh:property [
+        sh:path fair2:certifiedBy ;
+        sh:minCount 1 ;
+        sh:node fair2s:OrganizationShape ;
+    ] ;
+
+    sh:property [
+        sh:path fair2:dateIssued ;
+        sh:minCount 1 ;
+        sh:datatype xsd:date ;
+    ] ;
+
+    sh:property [
+        sh:path fair2:fair2ComplianceLevel ;
+        sh:minCount 1 ;
+        sh:node fair2s:IdentifierShape ;
+    ] ;
+
+    sh:property [
+        sh:path fair2:certificationDocument ;
+        sh:minCount 1 ;
+        sh:node fair2s:IdentifierShape ;
+    ] ;
+
+    sh:property [
+        sh:path fair2:verificationEndpoint ;
+        sh:nodeKind sh:IRI ;
+    ] ;
+
+    sh:property [
+        sh:path fair2:certificationScope ;
+        sh:minCount 1 ;
+        sh:node fair2s:TextShape ;
+    ] .

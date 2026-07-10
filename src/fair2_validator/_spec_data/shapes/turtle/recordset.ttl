@@ -1,0 +1,81 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <https://schema.org/> .
+@prefix cr: <http://mlcommons.org/croissant/> .
+@prefix fair2s: <https://fair2.ai/shapes/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+fair2s:RecordSetShape
+    a sh:NodeShape ;
+    sh:targetClass cr:RecordSet ;
+    sh:nodeKind sh:IRI ;
+
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:node fair2s:TextShape ;
+        sh:message "Name must be a string or a language-tagged string."
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:node fair2s:TextShape ;
+        sh:message "Name must be a string or a language-tagged string."
+    ] ;
+
+    sh:property [
+        sh:path cr:field ;
+        sh:minCount 1 ;
+        sh:node fair2s:FieldShape ;
+        sh:description "The columns/attributes defined within this record set."
+    ] .
+
+fair2s:FieldShape
+    a sh:NodeShape ;
+    sh:targetClass cr:Field ;
+    sh:nodeKind sh:IRI ;
+
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:node fair2s:TextShape ;
+        sh:message "Name must be a string or a language-tagged string."
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:node fair2s:TextShape ;
+        sh:message "Name must be a string or a language-tagged string."
+    ] ;
+    sh:property [
+        sh:path cr:dataType ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description "The semantic type of the data (e.g., schema:Float)."
+    ] ;
+
+    sh:property [
+        sh:path cr:source ;
+        sh:minCount 1 ;
+        sh:node fair2s:SourceShape ;
+        sh:description "The mapping to the physical file and column."
+    ] .
+
+fair2s:SourceShape
+    a sh:NodeShape ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+
+    sh:property [
+        sh:path cr:fileObject ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description "The @id of the FileObject this field is extracted from."
+    ] ;
+
+    sh:property [
+        sh:path cr:extract ;
+        sh:node [
+            sh:property [ sh:path cr:column ; sh:minCount 1 ; sh:node fair2s:TextShape ]
+        ] ;
+        sh:description "The physical column name in the source file."
+    ] .

@@ -1,0 +1,55 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <https://schema.org/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix fair2s: <https://fair2.ai/shapes/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+fair2s:DigitalDocumentShape
+    a sh:NodeShape ;
+    sh:targetClass schema:DigitalDocument ;
+    sh:nodeKind sh:IRI ;
+
+    sh:property [ sh:path schema:name ; sh:minCount 1 ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path schema:pagination ; sh:node fair2s:TextShape ;
+        sh:description "Relative file path to the document within the dataset package." ] ;
+    sh:property [ sh:path schema:encodingFormat ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path schema:url ; sh:node fair2s:IdentifierShape ] .
+
+fair2s:SoftwareSourceCodeShape
+    a sh:NodeShape ;
+    sh:targetClass schema:SoftwareSourceCode ;
+    sh:nodeKind sh:IRI ;
+
+    sh:property [ sh:path schema:name ; sh:minCount 1 ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path schema:identifier ; sh:node fair2s:TextShape ;
+        sh:description "Relative path or persistent identifier for the script." ] ;
+    sh:property [ sh:path schema:encodingFormat ; sh:node fair2s:TextShape ;
+        sh:description "MIME type of the source file (e.g., text/x-python)." ] ;
+    sh:property [ sh:path schema:url ; sh:node fair2s:IdentifierShape ] ;
+    sh:property [ sh:path schema:programmingLanguage ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path schema:runtimePlatform ; sh:node fair2s:TextShape ;
+        sh:description "Runtime environment (e.g., Python 3.11, R 4.3)." ] .
+
+fair2s:ActivityShape
+    a sh:NodeShape ;
+    sh:targetClass prov:Activity ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+
+    sh:property [ sh:path rdfs:label ; sh:minCount 1 ; sh:node fair2s:TextShape ;
+        sh:description "Human-readable name for the activity." ] ;
+    sh:property [ sh:path prov:wasAssociatedWith ; sh:nodeKind sh:BlankNodeOrIRI ;
+        sh:description "The agent (SoftwareAgent, Person, Organization) responsible for this activity." ] ;
+    sh:property [ sh:path schema:startTime ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path schema:endTime ; sh:datatype xsd:dateTime ] .
+
+fair2s:SoftwareAgentShape
+    a sh:NodeShape ;
+    sh:targetClass prov:SoftwareAgent ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+
+    sh:property [ sh:path schema:name ; sh:minCount 1 ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path schema:identifier ; sh:node fair2s:IdentifierShape ;
+        sh:description "Persistent identifier or homepage URL for the software." ] ;
+    sh:property [ sh:path schema:softwareVersion ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path schema:programmingLanguage ; sh:node fair2s:TextShape ] .

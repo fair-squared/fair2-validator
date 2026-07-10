@@ -1,0 +1,26 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <https://schema.org/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix fair2: <https://fair2.ai/ns/> .
+@prefix fair2s: <https://fair2.ai/shapes/> .
+
+fair2s:ArticleShape
+    a sh:NodeShape ;
+    sh:targetClass schema:ScholarlyArticle ;
+    sh:nodeKind sh:IRI ;
+
+    sh:or (
+        [ sh:property [ sh:path schema:headline ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path schema:name ; sh:minCount 1 ] ]
+    ) ;
+    sh:property [ sh:path schema:datePublished ; sh:minCount 1 ] ;
+    sh:property [ sh:path schema:publisher ; sh:minCount 1 ] ;
+
+    sh:property [
+        sh:path prov:wasDerivedFrom ;
+        sh:minCount 1 ;
+        sh:node fair2s:IdentifierShape
+    ] ;
+
+    sh:property [ sh:path schema:version ; sh:minCount 1 ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path fair2:changeLog ; sh:node fair2s:UpdateActionShape ] .
