@@ -36,16 +36,24 @@ class Spec:
 
     @property
     def version(self) -> str:
-        try:
-            out = subprocess.run(
-                ["git", "-C", str(self.root), "describe", "--tags", "--always", "--dirty"],
-                capture_output=True, text=True, timeout=5,
-            )
-            if out.returncode == 0 and out.stdout.strip():
-                return out.stdout.strip()
-        except Exception:
-            pass
-        return "unknown"
+        """The spec version as a git tag only — never an intermediate
+        `<tag>-N-g<sha>` describe string. Releases are tag-only, so a pinned
+        spec that isn't exactly on a tag is reported as `untagged@<sha>`."""
+        def _git(*args: str) -> str:
+            try:
+                out = subprocess.run(["git", "-C", str(self.root), *args],
+                                     capture_output=True, text=True, timeout=5)
+                return out.stdout.strip() if out.returncode == 0 else ""
+            except Exception:
+                return ""
+        tag = _git("describe", "--tags", "--exact-match")   # HEAD is exactly a tag
+        if tag:
+            return tag
+        pointed = _git("tag", "--points-at", "HEAD")         # tag(s) at this commit
+        if pointed:
+            return pointed.splitlines()[0]
+        sha = _git("rev-parse", "--short", "HEAD")
+        return f"untagged@{sha}" if sha else "unknown"
 
 
 def _looks_like_spec(p: Path) -> bool:
