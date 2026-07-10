@@ -10,6 +10,12 @@ reconcile the reference example, as a reusable tool:
   spec's shapes — the **full** document or an **individual sub-schema**
   (e.g. just `methodSection` or `dataArticle`) — plus an `mlcroissant` load check
   and the documented [Compatibility Rules 1–6](https://github.com/fair-squared/fair2-spec/blob/main/docs/integration/ml-croissant.md).
+  A separate `meta` check enforces the required `_meta.conformsTo` (which sits
+  outside `@graph`, so SHACL can't see it) and **warns** when a document declares
+  a different spec version than the one the validator is pinned to.
+- **Findings point at the JSON.** Every finding carries the source-file location
+  to edit (`json: $["@graph"][0].methodSection[0].name`); violations on blank
+  nodes are described by their `name`/`@type` and their containing object.
 - **Fixing is agent-driven and confirm-before-apply.** With `--fix`, a Claude
   agent analyses the findings, **plans** the change, shows you the operations,
   and applies them **only after you confirm** — then re-validates. Nothing is

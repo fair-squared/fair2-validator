@@ -31,7 +31,7 @@ def _run_detection(target: Path, spec, schemas, do_croissant: bool, croissant_on
         rep.findings.extend(findings)
 
     if meta_requested:
-        mok, mfindings = check_meta(target)
+        mok, mfindings = check_meta(target, spec.version)
         rep.meta_ok = mok
         rep.findings.extend(mfindings)
     return rep

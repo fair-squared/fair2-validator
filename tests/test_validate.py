@@ -101,6 +101,29 @@ def test_blank_node_falls_back_to_container_path(spec, golden, tmp_path):
         assert " in " in f.locus and "Dataset" in f.locus, f.locus
 
 
+def test_meta_conformsto_matches_pinned_spec(spec, golden):
+    """The golden example declares the same spec version the validator is pinned to."""
+    ok, findings = check_meta(golden, spec.version)
+    assert ok is True
+    assert not [f for f in findings if f.severity == "warning"], [f.message for f in findings]
+
+
+def test_meta_conformsto_version_mismatch_warns(spec, golden, tmp_path):
+    """A document declaring a different spec version passes but is flagged (warning)."""
+    doc = json.loads(golden.read_text())
+    doc["_meta"]["conformsTo"] = "https://fair2.ai/spec/v0.0.1"
+    other = tmp_path / "other.json"
+    other.write_text(json.dumps(doc))
+
+    ok, findings = check_meta(other, spec.version)
+    assert ok is True  # structurally valid — mismatch is advisory, not a failure
+    warns = [f for f in findings if f.severity == "warning"]
+    assert len(warns) == 1, [f.message for f in findings]
+    assert "v0.0.1" in warns[0].message and spec.version in warns[0].message
+    # without a pinned version, no mismatch check (back-compat)
+    assert check_meta(other) == (True, [])
+
+
 def test_croissant_cycle_detected(spec, golden, tmp_path):
     """Introducing a self-referential url is flagged by the static Rule checks."""
     doc = json.loads(golden.read_text())
