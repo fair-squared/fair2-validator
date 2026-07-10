@@ -14,6 +14,7 @@ class Finding:
     severity: str        # "violation" | "warning" | "info"
     message: str
     locus: str = ""      # focus node / path / json pointer
+    json_path: str = ""  # location in the source JSON, e.g. $["@graph"][0].name
     rule: str = ""       # e.g. "mlcroissant Rule 2"
     suggestion: str = "" # advisory hint (never auto-applied)
 
@@ -25,13 +26,14 @@ class Report:
     scope: str                       # "full" or comma-joined sub-schema names
     shacl_conforms: Optional[bool] = None
     croissant_ok: Optional[bool] = None
+    meta_ok: Optional[bool] = None
     findings: list[Finding] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
-        shacl = self.shacl_conforms is not False
-        croissant = self.croissant_ok is not False
-        return shacl and croissant
+        return (self.shacl_conforms is not False
+                and self.croissant_ok is not False
+                and self.meta_ok is not False)
 
     def add(self, f: Finding) -> None:
         self.findings.append(f)
@@ -51,6 +53,8 @@ class Report:
             lines.append(f"  SHACL:   {'CONFORMS' if self.shacl_conforms else 'FAILED'}")
         if self.croissant_ok is not None:
             lines.append(f"  Croissant: {'LOADS' if self.croissant_ok else 'FAILED'}")
+        if self.meta_ok is not None:
+            lines.append(f"  _meta:   {'OK' if self.meta_ok else 'FAILED'}")
         lines.append("")
         if not self.findings:
             lines.append("  No issues found. ✅")
@@ -59,6 +63,8 @@ class Report:
             lines.append(f"  {icon.get(f.severity, '?')} [{f.source}] {f.message}")
             if f.locus:
                 lines.append(f"      at: {f.locus}")
+            if f.json_path:
+                lines.append(f"      json: {f.json_path}")
             if f.rule:
                 lines.append(f"      rule: {f.rule}")
             if f.suggestion:

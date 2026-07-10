@@ -1,10 +1,12 @@
 """Detection tests — run offline against the pinned fair2-spec golden example."""
 import json
+import re
 import pytest
 
 from fair2_validator.spec import find_spec, SpecNotFound
 from fair2_validator.validate import validate
 from fair2_validator.croissant import static_rules, check_croissant
+from fair2_validator.meta import check_meta
 from fair2_validator import shapes as S
 
 
@@ -58,6 +60,47 @@ def test_subschema_isolation(spec, golden, tmp_path):
     assert validate(broken, spec, ["distribution"]).shacl_conforms is True
 
 
+def test_shacl_finding_has_json_path(spec, golden, tmp_path):
+    """A SHACL violation points at the exact JSON location that needs editing."""
+    doc = json.loads(golden.read_text())
+    ms = _dataset(doc)["methodSection"][0]
+    ms.pop("name", None)  # force a minCount violation on schema:name
+    broken = tmp_path / "broken.json"
+    broken.write_text(json.dumps(doc))
+
+    rep = validate(broken, spec, ["methodSection"])
+    assert rep.shacl_conforms is False
+    paths = [f.json_path for f in rep.findings if f.json_path]
+    assert paths, rep.render()
+    assert all(p.startswith("$") for p in paths)
+    assert any(p.endswith(".name") and "methodSection" in p for p in paths), paths
+
+
+def test_blank_node_falls_back_to_container_path(spec, golden, tmp_path):
+    """A violation on a blank node (no @id) reports the full path of the
+    nearest @id-bearing container it belongs to, not an empty path."""
+    doc = json.loads(golden.read_text())
+    ds = _dataset(doc)
+    person = ds["contributor"][0]  # a schema:Person with no @id -> blank node
+    assert "@id" not in person
+    person.pop("schema:name", None)
+    person.pop("name", None)
+    person["schema:email"] = 12345  # wrong datatype forces a violation
+    broken = tmp_path / "broken.json"
+    broken.write_text(json.dumps(doc))
+
+    rep = validate(broken, spec)
+    assert rep.shacl_conforms is False
+    blank = [f for f in rep.findings
+             if f.source == "shacl" and f.locus and not f.locus.startswith("http")]
+    assert blank, rep.render()
+    for f in blank:
+        assert f.json_path.startswith("$"), f.json_path
+        # locus is human-readable: names the @type/name + container, never a raw bnode id
+        assert not re.match(r"^N[0-9a-f]{16,}", f.locus), f.locus
+        assert " in " in f.locus and "Dataset" in f.locus, f.locus
+
+
 def test_croissant_cycle_detected(spec, golden, tmp_path):
     """Introducing a self-referential url is flagged by the static Rule checks."""
     doc = json.loads(golden.read_text())
@@ -74,3 +117,28 @@ def test_golden_croissant_loads(spec, golden):
     if ok is None:
         pytest.skip("mlcroissant not installed")
     assert ok is True
+
+
+def test_golden_meta_conformsto(spec, golden):
+    ok, findings = check_meta(golden)
+    assert ok is True, [f.message for f in findings]
+
+
+def test_meta_missing_conformsto_flagged(spec, golden, tmp_path):
+    doc = json.loads(golden.read_text())
+    doc.get("_meta", {}).pop("conformsTo", None)
+    broken = tmp_path / "no_conformsto.json"
+    broken.write_text(json.dumps(doc))
+    ok, findings = check_meta(broken)
+    assert ok is False
+    assert any("conformsTo" in f.message for f in findings)
+    assert all(f.json_path.startswith("$._meta") for f in findings)
+
+
+def test_meta_malformed_conformsto_flagged(spec, golden, tmp_path):
+    doc = json.loads(golden.read_text())
+    doc["_meta"]["conformsTo"] = "http://mlcommons.org/croissant/1.0"  # not a fair2 spec URL
+    broken = tmp_path / "bad_conformsto.json"
+    broken.write_text(json.dumps(doc))
+    ok, _ = check_meta(broken)
+    assert ok is False

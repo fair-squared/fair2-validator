@@ -7,6 +7,7 @@ from pyshacl import validate as pyshacl_validate
 
 from .spec import Spec
 from .report import Report, Finding
+from .nodepath import NodeIndex
 from . import shapes as S
 
 SH = S.SH
@@ -45,7 +46,36 @@ def _inject_target_nodes(shapes_g: rdflib.Graph, data: rdflib.Graph,
     return n
 
 
-def _findings_from_report(report_graph: rdflib.Graph, source: str) -> list[Finding]:
+def _short(term: rdflib.term.Node | None) -> str:
+    """Compact an IRI to its last path/fragment segment (schema:Person, etc.)."""
+    if term is None:
+        return ""
+    s = str(term).split("/")[-1].split("#")[-1]
+    return s or str(term)
+
+
+def _named_ancestor(data: rdflib.Graph, node: rdflib.term.Node,
+                    _seen: set | None = None) -> tuple[str, str] | None:
+    """Climb the data graph from a blank node to the nearest @id-bearing node.
+
+    Returns (ancestor_iri, connecting_property) where connecting_property is the
+    compacted predicate on that ancestor leading toward the blank subtree."""
+    _seen = _seen if _seen is not None else set()
+    if node in _seen:
+        return None
+    _seen.add(node)
+    for parent, pred in data.subject_predicates(object=node):
+        if isinstance(parent, rdflib.URIRef):
+            return str(parent), _short(pred)
+        hit = _named_ancestor(data, parent, _seen)
+        if hit:
+            return hit
+    return None
+
+
+def _findings_from_report(report_graph: rdflib.Graph, source: str,
+                          index: NodeIndex | None = None,
+                          data: rdflib.Graph | None = None) -> list[Finding]:
     out: list[Finding] = []
     q = """
     PREFIX sh: <http://www.w3.org/ns/shacl#>
@@ -63,8 +93,26 @@ def _findings_from_report(report_graph: rdflib.Graph, source: str) -> list[Findi
         elif row.sev and str(row.sev).endswith("Info"):
             sev = "info"
         msg = str(row.msg) if row.msg else "constraint violation"
+        focus_label = str(row.focus)
+        json_path = ""
+        if index is not None:
+            json_path = index.path_for(str(row.focus), path)
+        # Blank node (no @id): don't surface the opaque bnode id. Describe it by
+        # its name / @type, and point the JSON path at its nearest @id-bearing
+        # container (deepened by the connecting property).
+        if isinstance(row.focus, rdflib.BNode) and data is not None:
+            name = data.value(row.focus, rdflib.URIRef(S.expand("schema:name")))
+            rtype = data.value(row.focus, rdflib.RDF.type)
+            focus_label = (f'"{name}"' if name else "") or _short(rtype) or "blank node"
+            if not json_path and index is not None:
+                anc = _named_ancestor(data, row.focus)
+                if anc:
+                    anc_type = _short(data.value(rdflib.URIRef(anc[0]), rdflib.RDF.type))
+                    focus_label += f" in {anc_type or 'node'} <{anc[0]}>"
+                    json_path = index.path_for(anc[0], anc[1])
         out.append(Finding(source=source, severity=sev, message=msg,
-                           locus=f"{row.focus}" + (f" → {path}" if path else "")))
+                           locus=focus_label + (f" → {path}" if path else ""),
+                           json_path=json_path))
     return out
 
 
@@ -73,6 +121,7 @@ def validate(target: Path, spec: Spec, schemas: list[str] | None = None) -> Repo
     scope = "full" if not schemas or schemas == ["dataset"] else ",".join(schemas)
     rep = Report(target=str(target), spec_version=spec.version, scope=scope)
     data = _load_data(target)
+    index = NodeIndex(target)
 
     if not schemas or schemas == ["dataset"]:
         # full validation: all shapes, auto-targeted
@@ -82,7 +131,7 @@ def validate(target: Path, spec: Spec, schemas: list[str] | None = None) -> Repo
                                            inplace=False)
         rep.shacl_conforms = bool(conforms)
         if not conforms:
-            rep.findings.extend(_findings_from_report(rg, "shacl"))
+            rep.findings.extend(_findings_from_report(rg, "shacl", index, data))
         return rep
 
     rep.shacl_conforms = True
@@ -104,7 +153,7 @@ def validate(target: Path, spec: Spec, schemas: list[str] | None = None) -> Repo
                                            inplace=False)
         if not conforms:
             rep.shacl_conforms = False
-            for f in _findings_from_report(rg, "shacl"):
+            for f in _findings_from_report(rg, "shacl", index, data):
                 f.message = f"[{name}] {f.message}"
                 rep.add(f)
     return rep

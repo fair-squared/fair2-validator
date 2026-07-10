@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 
 from .report import Finding
+from .nodepath import NodeIndex
 
 CROSS_GRAPH_PROPS = {
     "citation", "dataArticle", "dataPortal", "dataArchive", "dataset",
@@ -98,6 +99,7 @@ def _walk(obj):
 def static_rules(target: Path) -> list[Finding]:
     doc = _load_json(target)
     ctx = _context_obj(doc)
+    index = NodeIndex(target)
     out: list[Finding] = []
 
     # Rule 1 & 3 — reference cycles. Runs over the whole document (works for both
@@ -107,6 +109,7 @@ def static_rules(target: Path) -> list[Finding]:
         out.append(Finding("rule", "violation",
                            "reference cycle in @id graph (mlcroissant inlines & mutates shared nodes)",
                            locus=" → ".join(cyc),
+                           json_path=index.path_for(cyc[0]) if cyc else "",
                            rule="mlcroissant Rule 1/3",
                            suggestion="break the cycle: make the back-edge a plain string, drop it, or inline as a fresh blank node."))
 
@@ -115,6 +118,7 @@ def static_rules(target: Path) -> list[Finding]:
         if term in CROSS_GRAPH_PROPS and isinstance(defn, dict) and defn.get("@type") == "@id":
             out.append(Finding("rule", "violation",
                                f"@context term '{term}' uses \"@type\":\"@id\" on a cross-graph property",
+                               json_path=index.context_path(term),
                                rule="mlcroissant Rule 2",
                                suggestion=f"remove \"@type\":\"@id\" from '{term}'; reference nodes with explicit {{'@id': ...}} objects instead."))
 
@@ -122,6 +126,7 @@ def static_rules(target: Path) -> list[Finding]:
     if "@language" not in ctx:
         out.append(Finding("rule", "warning",
                            "@context has no @language (mlcroissant requires it)",
+                           json_path=index.context_path(),
                            rule="mlcroissant",
                            suggestion='add "@language": "en" to the @context.'))
 
@@ -136,11 +141,13 @@ def static_rules(target: Path) -> list[Finding]:
                 dist_ids.add(fid)
             if not any(str(x) in ("cr:FileObject", "FileObject") or str(x).endswith("croissant/FileObject") for x in types if x):
                 out.append(Finding("rule", "warning", "distribution entry is not typed cr:FileObject",
-                                   locus=str(fid), rule="mlcroissant Rule 6",
+                                   locus=str(fid), json_path=index.path_for(str(fid), "@type"),
+                                   rule="mlcroissant Rule 6",
                                    suggestion='set "@type": "cr:FileObject".'))
             if not (node.get("sha256") or node.get("md5")):
                 out.append(Finding("rule", "warning", "FileObject has no schema:sha256 or md5 checksum",
-                                   locus=str(fid), rule="mlcroissant",
+                                   locus=str(fid), json_path=index.path_for(str(fid)),
+                                   rule="mlcroissant",
                                    suggestion="add schema:sha256 (mlcroissant expects schema:sha256, not cr:sha256)."))
     # source.fileObject references that don't match a distribution @id (Rule 5)
     for node in _walk(doc):
@@ -151,6 +158,7 @@ def static_rules(target: Path) -> list[Finding]:
             if ref and dist_ids and ref not in dist_ids:
                 out.append(Finding("rule", "warning",
                                    f"field source.fileObject '{ref}' has no matching distribution @id",
+                                   json_path=index.path_for(str(node.get("@id")), "source"),
                                    rule="mlcroissant Rule 5",
                                    suggestion="make the distribution @id match the field source.fileObject @id exactly."))
     return out

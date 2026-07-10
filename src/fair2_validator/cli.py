@@ -10,17 +10,30 @@ from .report import Report
 from . import shapes as S
 from .validate import validate
 from .croissant import check_croissant
+from .meta import check_meta
 
 
 def _run_detection(target: Path, spec, schemas, do_croissant: bool, croissant_only: bool) -> Report:
+    # `meta` is a non-SHACL pseudo-schema (deterministic _meta.conformsTo check).
+    meta_requested = (not croissant_only) and (schemas is None or "meta" in schemas)
+    shacl_schemas = None if schemas is None else [s for s in schemas if s != "meta"]
+
     if croissant_only:
         rep = Report(target=str(target), spec_version=spec.version, scope="croissant")
+    elif schemas is not None and not shacl_schemas:
+        rep = Report(target=str(target), spec_version=spec.version, scope="meta")
     else:
-        rep = validate(target, spec, schemas)
+        rep = validate(target, spec, shacl_schemas)
+
     if do_croissant or croissant_only:
         ok, findings = check_croissant(target)
         rep.croissant_ok = ok
         rep.findings.extend(findings)
+
+    if meta_requested:
+        mok, mfindings = check_meta(target)
+        rep.meta_ok = mok
+        rep.findings.extend(mfindings)
     return rep
 
 
@@ -45,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
         print("Available sub-schemas (--schema):")
         for n in S.schema_names():
             print(f"  {n}")
+        print("  meta        (deterministic root _meta.conformsTo check; not SHACL)")
         return 0
 
     if not args.target:
