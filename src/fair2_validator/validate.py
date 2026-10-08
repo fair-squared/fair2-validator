@@ -116,22 +116,46 @@ def _findings_from_report(report_graph: rdflib.Graph, source: str,
     return out
 
 
+def _ontology_graph(spec: Spec) -> rdflib.Graph | None:
+    """The ontology, passed to pyshacl as ont_graph.
+
+    Required, not optional: class targets follow rdf:type/rdfs:subClassOf* over
+    the triples the validator holds, so without it a shape named against a
+    superclass never reaches its subclass instances and they pass unchecked.
+    """
+    path = spec.ontology_file
+    if not path.is_file():
+        return None
+    g = rdflib.Graph()
+    g.parse(path, format="turtle")
+    return g
+
+
 def validate(target: Path, spec: Spec, schemas: list[str] | None = None) -> Report:
     target = Path(target)
     scope = "full" if not schemas or schemas == ["dataset"] else ",".join(schemas)
     rep = Report(target=str(target), spec_version=spec.version, scope=scope)
     data = _load_data(target)
     index = NodeIndex(target)
+    ont = _ontology_graph(spec)
+    if ont is None:
+        rep.add(Finding("shacl", "warning",
+                        "ontology not found next to the shapes; class targeting cannot "
+                        "follow rdfs:subClassOf, so some nodes will go unchecked",
+                        rule="fair2 ontology",
+                        suggestion="ensure ontologies/fair2_ontology.ttl ships with the spec"))
 
     if not schemas or schemas == ["dataset"]:
         # full validation: all shapes, auto-targeted
         files = sorted(p.name for p in spec.shapes_dir.glob("*.ttl"))
         shapes_g = _merge_shapes(spec.shapes_dir, files)
-        conforms, rg, _ = pyshacl_validate(data, shacl_graph=shapes_g, advanced=True,
-                                           inplace=False)
+        # allow_warnings: a sh:Warning must be reported without failing the
+        # document. The deprecated FAIR2-Validated form relies on this.
+        conforms, rg, _ = pyshacl_validate(data, shacl_graph=shapes_g, ont_graph=ont,
+                                           advanced=True, inplace=False,
+                                           allow_warnings=True)
         rep.shacl_conforms = bool(conforms)
-        if not conforms:
-            rep.findings.extend(_findings_from_report(rg, "shacl", index, data))
+        rep.findings.extend(_findings_from_report(rg, "shacl", index, data))
         return rep
 
     rep.shacl_conforms = True
@@ -149,11 +173,12 @@ def validate(target: Path, spec: Spec, schemas: list[str] | None = None) -> Repo
                 rep.add(Finding("shacl", "info",
                                 f"[{name}] no nodes found via {spec_entry['prop']}; nothing to check"))
                 continue
-        conforms, rg, _ = pyshacl_validate(data, shacl_graph=shapes_g, advanced=True,
-                                           inplace=False)
+        conforms, rg, _ = pyshacl_validate(data, shacl_graph=shapes_g, ont_graph=ont,
+                                           advanced=True, inplace=False,
+                                           allow_warnings=True)
         if not conforms:
             rep.shacl_conforms = False
-            for f in _findings_from_report(rg, "shacl", index, data):
-                f.message = f"[{name}] {f.message}"
-                rep.add(f)
+        for f in _findings_from_report(rg, "shacl", index, data):
+            f.message = f"[{name}] {f.message}"
+            rep.add(f)
     return rep

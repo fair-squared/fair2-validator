@@ -26,7 +26,7 @@ def golden(spec):
 def test_list_schemas():
     names = S.schema_names()
     for expected in ("dataset", "methodSection", "dataArticle", "distribution",
-                     "spatialCoverage", "recordSet", "contributor"):
+                     "spatialCoverage", "recordSet", "attribution"):
         assert expected in names
 
 
@@ -42,9 +42,20 @@ def test_golden_per_subschema_conforms(spec, golden):
 
 
 def _dataset(doc):
-    for n in doc["@graph"]:
+    """The Dataset node.
+
+    From spec v1.4.0 the document is single-rooted: the Dataset's properties
+    sit at the top level and there is no @graph wrapper. Older documents are
+    still accepted here so the tests work either way.
+    """
+    def _is_dataset(n):
         t = n.get("@type")
-        if t == "Dataset" or (isinstance(t, list) and "Dataset" in t):
+        return t == "Dataset" or (isinstance(t, list) and "Dataset" in t)
+
+    if _is_dataset(doc):
+        return doc
+    for n in doc.get("@graph", []):
+        if _is_dataset(n):
             return n
     raise AssertionError("no Dataset node")
 
@@ -81,11 +92,12 @@ def test_blank_node_falls_back_to_container_path(spec, golden, tmp_path):
     nearest @id-bearing container it belongs to, not an empty path."""
     doc = json.loads(golden.read_text())
     ds = _dataset(doc)
-    person = ds["contributor"][0]  # a schema:Person with no @id -> blank node
-    assert "@id" not in person
-    person.pop("schema:name", None)
-    person.pop("name", None)
-    person["schema:email"] = 12345  # wrong datatype forces a violation
+    # a field's unit is reached through an @id-bearing container but the
+    # violation lands on a node with no @id of its own
+    field = ds["recordSet"][0]["field"][0]
+    source = field["source"]              # a cr:source object with no @id
+    assert "@id" not in source
+    source.pop("fileObject", None)        # required by SourceShape -> violation
     broken = tmp_path / "broken.json"
     broken.write_text(json.dumps(doc))
 
@@ -98,7 +110,9 @@ def test_blank_node_falls_back_to_container_path(spec, golden, tmp_path):
         assert f.json_path.startswith("$"), f.json_path
         # locus is human-readable: names the @type/name + container, never a raw bnode id
         assert not re.match(r"^N[0-9a-f]{16,}", f.locus), f.locus
-        assert " in " in f.locus and "Dataset" in f.locus, f.locus
+        # locus names the nearest @id-bearing container by type, not a bnode id
+        assert " in " in f.locus, f.locus
+        assert re.search(r" in \w+ <https?://", f.locus), f.locus
 
 
 def test_meta_conformsto_matches_pinned_spec(spec, golden):
@@ -111,7 +125,8 @@ def test_meta_conformsto_matches_pinned_spec(spec, golden):
 def test_meta_conformsto_version_mismatch_warns(spec, golden, tmp_path):
     """A document declaring a different spec version passes but is flagged (warning)."""
     doc = json.loads(golden.read_text())
-    doc["_meta"]["conformsTo"] = "https://fair2.ai/spec/v0.0.1"
+    ds = _dataset(doc)
+    ds["conformsTo"] = ["http://mlcommons.org/croissant/1.0", "https://fair2.ai/spec/v0.0.1"]
     other = tmp_path / "other.json"
     other.write_text(json.dumps(doc))
 
@@ -147,21 +162,48 @@ def test_golden_meta_conformsto(spec, golden):
     assert ok is True, [f.message for f in findings]
 
 
-def test_meta_missing_conformsto_flagged(spec, golden, tmp_path):
+def test_missing_spec_conformsto_is_a_shacl_violation(spec, golden, tmp_path):
+    """Absence is DatasetShape's job, not check_meta's.
+
+    Up to spec v1.3.0 the spec version lived in a non-RDF _meta block that
+    SHACL could not see, so this module enforced it. From v1.4.0 it is a
+    dct:conformsTo value with a pattern constraint, and reporting it here too
+    would surface one defect under two rule names.
+    """
     doc = json.loads(golden.read_text())
-    doc.get("_meta", {}).pop("conformsTo", None)
-    broken = tmp_path / "no_conformsto.json"
+    ds = _dataset(doc)
+    ds["conformsTo"] = "http://mlcommons.org/croissant/1.0"  # Croissant only
+    broken = tmp_path / "no_spec_conformsto.json"
     broken.write_text(json.dumps(doc))
+
     ok, findings = check_meta(broken)
-    assert ok is False
-    assert any("conformsTo" in f.message for f in findings)
-    assert all(f.json_path.startswith("$._meta") for f in findings)
+    assert ok is True and findings == []          # check_meta stays quiet
+
+    rep = validate(broken, spec)
+    assert rep.shacl_conforms is False            # SHACL catches it
+    assert any("conformsTo" in f.message for f in rep.findings), rep.render()
 
 
-def test_meta_malformed_conformsto_flagged(spec, golden, tmp_path):
+def test_legacy_meta_block_is_flagged(spec, golden, tmp_path):
+    """A pre-v1.4.0 document still carrying _meta gets a migration warning."""
     doc = json.loads(golden.read_text())
-    doc["_meta"]["conformsTo"] = "http://mlcommons.org/croissant/1.0"  # not a fair2 spec URL
+    doc["_meta"] = {"conformsTo": "https://fair2.ai/spec/v1.3.0", "version": "1.0.0"}
+    legacy = tmp_path / "legacy.json"
+    legacy.write_text(json.dumps(doc))
+
+    ok, findings = check_meta(legacy)
+    assert ok is True
+    assert any("_meta" in f.message and f.severity == "warning" for f in findings), \
+        [f.message for f in findings]
+
+
+def test_malformed_spec_conformsto_is_a_shacl_violation(spec, golden, tmp_path):
+    """A spec conformsTo that is not vX.Y.Z fails the DatasetShape pattern."""
+    doc = json.loads(golden.read_text())
+    ds = _dataset(doc)
+    ds["conformsTo"] = ["http://mlcommons.org/croissant/1.0", "https://fair2.ai/spec/latest"]
     broken = tmp_path / "bad_conformsto.json"
     broken.write_text(json.dumps(doc))
-    ok, _ = check_meta(broken)
-    assert ok is False
+
+    rep = validate(broken, spec)
+    assert rep.shacl_conforms is False, rep.render()

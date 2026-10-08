@@ -37,6 +37,18 @@ class Spec:
         return self.root / "examples" / "example-1" / "borja2025.json"
 
     @property
+    def ontology_file(self) -> Path:
+        """The ontology, which must be loaded alongside the shapes.
+
+        SHACL class targets select instances via rdf:type/rdfs:subClassOf*, and
+        that path can only be walked over triples the validator holds. Without
+        this file fair2s:ArticleShape never reaches a node typed
+        fair2:DataArticle, and the body goes unchecked while the report says the
+        document conforms. See the spec's shacl-validation.md.
+        """
+        return self.root / "ontologies" / "fair2_ontology.ttl"
+
+    @property
     def version(self) -> str:
         """The spec version as a git tag only — never an intermediate
         `<tag>-N-g<sha>` describe string. Releases are tag-only, so a pinned

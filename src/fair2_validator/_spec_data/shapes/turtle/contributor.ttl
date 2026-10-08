@@ -36,11 +36,28 @@ fair2s:ContributorRoleShape
         [ sh:property [ sh:path rdfs:label ; sh:minCount 1 ; sh:node fair2s:TextShape ] ]
     ) .
 
-fair2s:ContributorShape
+fair2s:AttributionShape
     a sh:NodeShape ;
-    sh:node fair2s:PersonOrOrganizationShape ;
+    sh:targetClass prov:Attribution ;
+    sh:nodeKind sh:IRI ;
+    sh:description "A dataset's relationship to one agent: who they are, what roles they held, and where they sat in the list. Every domain here checks out, unlike prov:hadRole on a Person." ;
+
+    sh:property [
+        sh:path prov:agent ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description "The Person or Organization, by reference. Described once under schema:creator."
+    ] ;
     sh:property [
         sh:path prov:hadRole ;
         sh:minCount 1 ;
         sh:node fair2s:ContributorRoleShape ;
+        sh:description "One or more roles, drawn from CRediT, CRO or the FAIR2 role vocabulary."
+    ] ;
+    sh:property [
+        sh:path fair2:position ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:description "Ordinal position in the author list. RDF loses array order, so it must be stated."
     ] .

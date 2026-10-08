@@ -12,26 +12,30 @@
       "fair2": "https://fair2.ai/ns/",
       "fair2s": "https://fair2.ai/shapes/",
       "prov": "http://www.w3.org/ns/prov#",
+      "qudt": "http://qudt.org/schema/qudt/",
       "rai": "http://mlcommons.org/croissant/RAI/",
       "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
       "schema": "https://schema.org/",
       "sh": "http://www.w3.org/ns/shacl#",
       "skos": "http://www.w3.org/2004/02/skos/core#",
       "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "included": {
+        "@id": "@included"
+      },
       "Activity": {
         "@id": "prov:Activity"
       },
       "Article": {
         "@id": "schema:Article"
       },
-      "Audience": {
-        "@id": "fair2:Audience"
-      },
       "AuthorRole": {
         "@id": "fair2:AuthorRole"
       },
       "Boolean": {
         "@id": "schema:Boolean"
+      },
+      "Attribution": {
+        "@id": "prov:Attribution"
       },
       "Certification": {
         "@id": "fair2:Certification"
@@ -46,8 +50,7 @@
         "@id": "fair2:DataArchive"
       },
       "DataArticle": {
-        "@id": "fair2:DataArticle",
-        "@type": "schema:ScholarlyArticle"
+        "@id": "fair2:DataArticle"
       },
       "DataDownload": {
         "@id": "schema:DataDownload"
@@ -82,10 +85,6 @@
       "Event": {
         "@id": "schema:Event"
       },
-      "ExperimentDataset": {
-        "@id": "fair2:ExperimentDataset",
-        "@type": "schema:Dataset"
-      },
       "Field": {
         "@id": "cr:Field"
       },
@@ -95,8 +94,14 @@
       "Float": {
         "@id": "schema:Float"
       },
+      "GeoCoordinates": {
+        "@id": "schema:GeoCoordinates"
+      },
       "GeoShape": {
         "@id": "schema:GeoShape"
+      },
+      "Grant": {
+        "@id": "schema:Grant"
       },
       "HowTo": {
         "@id": "schema:HowTo"
@@ -110,18 +115,14 @@
       "Integer": {
         "@id": "schema:Integer"
       },
-      "Location": {
-        "@id": "schema:Location"
-      },
       "Number": {
         "@id": "schema:Number"
       },
       "Offer": {
         "@id": "schema:Offer"
       },
-      "OpenDataArticleSection": {
-        "@id": "fair2:OpenDataArticleSection",
-        "@type": "schema:Text"
+      "MethodSection": {
+        "@id": "fair2:MethodSection"
       },
       "Organization": {
         "@id": "schema:Organization"
@@ -144,18 +145,14 @@
       "Rating": {
         "@id": "schema:Rating"
       },
-      "RecordSet": {
-        "@id": "cr:RecordSet"
-      },
-      "Role": {
-        "@id": "fair2:Role"
-      },
       "ScholarlyArticle": {
         "@id": "schema:ScholarlyArticle"
       },
+      "RecordSet": {
+        "@id": "cr:RecordSet"
+      },
       "Section": {
-        "@id": "fair2:Section",
-        "@type": "schema:HowToSection"
+        "@id": "fair2:Section"
       },
       "SoftwareAgent": {
         "@id": "prov:SoftwareAgent"
@@ -164,8 +161,10 @@
         "@id": "schema:SoftwareSourceCode"
       },
       "Step": {
-        "@id": "fair2:Step",
-        "@type": "schema:HowToStep"
+        "@id": "fair2:Step"
+      },
+      "StepCase": {
+        "@id": "fair2:StepCase"
       },
       "Submission": {
         "@id": "fair2:Submission"
@@ -176,20 +175,18 @@
       "Text": {
         "@id": "schema:Text"
       },
-      "Visualization": {
-        "@id": "fair2:Visualization"
-      },
       "accessRights": {
         "@id": "dct:accessRights"
-      },
-      "activities": {
-        "@id": "fair2:activities"
       },
       "address": {
         "@id": "schema:address"
       },
       "affiliation": {
         "@id": "schema:affiliation"
+      },
+      "agent": {
+        "@id": "prov:agent",
+        "@type": "@id"
       },
       "algorithm": {
         "@id": "schema:algorithm"
@@ -207,7 +204,7 @@
         "@id": "schema:articleBody"
       },
       "atLocation": {
-        "@id": "schema:atLocation"
+        "@id": "prov:atLocation"
       },
       "attachment": {
         "@id": "fair2:attachment"
@@ -224,17 +221,30 @@
       "bugFixes": {
         "@id": "fair2:bugFixes"
       },
-      "builds": {
-        "@id": "fair2:builds"
-      },
       "certificationDocument": {
         "@id": "fair2:certificationDocument"
       },
       "certificationScope": {
-        "@id": "fair2:certificationScope"
+        "@id": "fair2:certificationScope",
+        "@type": "@vocab"
       },
       "certifiedBy": {
         "@id": "fair2:certifiedBy"
+      },
+      "metadataConformance": {
+        "@id": "fair2:MetadataConformance"
+      },
+      "dataIntegrity": {
+        "@id": "fair2:DataIntegrity"
+      },
+      "licenseVerification": {
+        "@id": "fair2:LicenseVerification"
+      },
+      "processAttestation": {
+        "@id": "fair2:ProcessAttestation"
+      },
+      "temporalProof": {
+        "@id": "fair2:TemporalProof"
       },
       "changeLog": {
         "@id": "fair2:changeLog"
@@ -266,9 +276,6 @@
       "contributor": {
         "@id": "schema:contributor"
       },
-      "contributorRole": {
-        "@id": "fair2:contributorRole"
-      },
       "creator": {
         "@id": "schema:creator"
       },
@@ -282,10 +289,12 @@
         "@id": "rai:dataAnnotationProtocol"
       },
       "dataArchive": {
-        "@id": "fair2:dataArchive"
+        "@id": "fair2:dataArchive",
+        "@type": "@id"
       },
       "dataArticle": {
-        "@id": "fair2:dataArticle"
+        "@id": "fair2:dataArticle",
+        "@type": "@id"
       },
       "dataBiases": {
         "@id": "rai:dataBiases"
@@ -315,7 +324,8 @@
         "@id": "rai:dataManipulationProtocol"
       },
       "dataPortal": {
-        "@id": "fair2:dataPortal"
+        "@id": "fair2:dataPortal",
+        "@type": "@id"
       },
       "dataPreprocessingProtocol": {
         "@id": "rai:dataPreprocessingProtocol"
@@ -353,17 +363,17 @@
         "@type": "xsd:date"
       },
       "dateUpdated": {
-        "@id": "schema:dateUpdated",
+        "@id": "schema:dateModified",
         "@type": "xsd:date"
+      },
+      "department": {
+        "@id": "schema:department"
       },
       "definition": {
         "@id": "skos:definition"
       },
       "description": {
         "@id": "schema:description"
-      },
-      "digest": {
-        "@id": "fair2:digest"
       },
       "distribution": {
         "@id": "schema:distribution"
@@ -373,6 +383,10 @@
       },
       "email": {
         "@id": "schema:email"
+      },
+      "startedAtTime": {
+        "@id": "prov:startedAtTime",
+        "@type": "xsd:dateTime"
       },
       "encoding": {
         "@id": "schema:encoding"
@@ -384,7 +398,12 @@
         "@id": "cr:extract"
       },
       "fair2ComplianceLevel": {
-        "@id": "fair2:fair2ComplianceLevel"
+        "@id": "fair2:fair2ComplianceLevel",
+        "@type": "@id"
+      },
+      "endedAtTime": {
+        "@id": "prov:endedAtTime",
+        "@type": "xsd:dateTime"
       },
       "familyName": {
         "@id": "schema:familyName"
@@ -402,7 +421,7 @@
         "@id": "schema:funding"
       },
       "fundingScheme": {
-        "@id": "schema:fundingScheme"
+        "@id": "fair2:fundingScheme"
       },
       "generated": {
         "@id": "fair2:generated"
@@ -470,6 +489,13 @@
       "methodSection": {
         "@id": "fair2:methodSection"
       },
+      "metadataVersion": {
+        "@id": "fair2:metadataVersion"
+      },
+      "metadataModified": {
+        "@id": "fair2:metadataModified",
+        "@type": "xsd:date"
+      },
       "name": {
         "@id": "schema:name"
       },
@@ -527,9 +553,6 @@
       "recordSet": {
         "@id": "cr:recordSet"
       },
-      "roleName": {
-        "@id": "fair2:roleName"
-      },
       "runtimePlatform": {
         "@id": "schema:runtimePlatform"
       },
@@ -564,7 +587,7 @@
         "@id": "fair2:substep"
       },
       "symbol": {
-        "@id": "schema:symbol"
+        "@id": "qudt:symbol"
       },
       "temporalCoverage": {
         "@id": "schema:temporalCoverage"
@@ -585,25 +608,18 @@
       "value": {
         "@id": "schema:value"
       },
-      "variable": {
-        "@id": "fair2:variable",
-        "@type": "schema:DefinedTermSet"
-      },
       "variableMeasured": {
         "@id": "schema:variableMeasured"
       },
-      "variables": {
-        "@id": "fair2:variables",
-        "@type": "schema:DefinedTermSet"
+      "validationReport": {
+        "@id": "fair2:validationReport"
       },
       "verificationEndpoint": {
-        "@id": "fair2:verificationEndpoint"
+        "@id": "fair2:verificationEndpoint",
+        "@type": "@id"
       },
       "version": {
         "@id": "schema:version"
-      },
-      "visualization": {
-        "@id": "fair2:visualization"
       },
       "wasAssociatedWith": {
         "@id": "prov:wasAssociatedWith"
@@ -619,6 +635,40 @@
       },
       "wasRevisionOf": {
         "@id": "prov:wasRevisionOf"
+      },
+      "uri": "@id",
+      "identifier": {
+        "@id": "schema:identifier"
+      },
+      "qualifiedAttribution": {
+        "@id": "prov:qualifiedAttribution"
+      },
+      "position": {
+        "@id": "fair2:position"
+      },
+      "sec": "https://w3id.org/security#",
+      "digestMultibase": {
+        "@id": "sec:digestMultibase"
+      },
+      "graphDigestMultibase": {
+        "@id": "fair2:graphDigestMultibase"
+      },
+      "FAIR2CertificationCredential": {
+        "@id": "fair2:FAIR2CertificationCredential"
+      },
+      "FAIR2CertifierRegistry": {
+        "@id": "fair2:FAIR2CertifierRegistry"
+      },
+      "licenceTier": {
+        "@id": "fair2:licenceTier"
+      },
+      "allowedScopes": {
+        "@id": "fair2:allowedScopes",
+        "@type": "@vocab"
+      },
+      "certifiedDocument": {
+        "@id": "fair2:certifiedDocument",
+        "@type": "@id"
       }
     }
   ]

@@ -23,6 +23,6 @@ fair2s:DataPortalShape
 
     sh:property [ sh:path schema:dateCreated ; sh:datatype xsd:date ] ;
     sh:property [ sh:path schema:datePublished ; sh:datatype xsd:date ] ;
-    sh:property [ sh:path schema:dateUpdated ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path schema:dateModified ; sh:datatype xsd:date ] ;
 
     sh:property [ sh:path fair2:dataset ; sh:node fair2s:IdentifierShape ] .

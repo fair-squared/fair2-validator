@@ -18,6 +18,7 @@ fair2s:MethodSectionShape
     ] ;
     sh:property [
         sh:path schema:description ;
+        sh:minCount 1 ;
         sh:node fair2s:TextShape
     ] ;
     sh:property [
@@ -32,7 +33,7 @@ fair2s:MethodSectionShape
     ] ;
     sh:property [
         sh:path fair2:step ;
-        sh:minCount 0 ;
+        sh:minCount 1 ;
         sh:or (
             [ sh:node fair2s:MethodStepShape ]
             [ sh:node fair2s:StepCaseShape ]
@@ -46,7 +47,7 @@ fair2s:MethodStepShape
     sh:nodeKind sh:IRI ;
 
     sh:property [ sh:path schema:name ; sh:minCount 1 ] ;
-    sh:property [ sh:path schema:description ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path schema:description ; sh:minCount 1 ; sh:node fair2s:TextShape ] ;
 
     sh:property [
         sh:path fair2:substep ;
@@ -73,6 +74,7 @@ fair2s:StepCaseShape
     sh:nodeKind sh:IRI ;
     sh:description "Handles branching logic within the methodology." ;
     sh:property [ sh:path schema:name ; sh:minCount 1 ] ;
+    sh:property [ sh:path schema:description ; sh:minCount 1 ; sh:node fair2s:TextShape ] ;
     sh:property [
         sh:path fair2:qualifiedUsage ;
         sh:minCount 1 ;
@@ -97,7 +99,7 @@ fair2s:MethodSubstepShape
     sh:nodeKind sh:IRI ;
 
     sh:property [ sh:path schema:name ; sh:minCount 1 ] ;
-    sh:property [ sh:path schema:description ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path schema:description ; sh:minCount 1 ; sh:node fair2s:TextShape ] ;
     sh:property [ sh:path fair2:next ; sh:nodeKind sh:IRI ] ;
     sh:property [
         sh:path prov:used ;

@@ -3,42 +3,104 @@
 @prefix fair2: <https://fair2.ai/ns/> .
 @prefix fair2s: <https://fair2.ai/shapes/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+# Requirements common to every Certification node. What else is required
+# depends on the compliance level, which the two conditional shapes below
+# handle: the label says who vouches, the scope says what was checked.
 
 fair2s:CertificationShape
     a sh:NodeShape ;
     sh:targetClass fair2:Certification ;
 
     sh:property [
-        sh:path fair2:certifiedBy ;
-        sh:minCount 1 ;
-        sh:node fair2s:OrganizationShape ;
-    ] ;
-
-    sh:property [
-        sh:path fair2:dateIssued ;
-        sh:minCount 1 ;
-        sh:datatype xsd:date ;
-    ] ;
-
-    sh:property [
         sh:path fair2:fair2ComplianceLevel ;
         sh:minCount 1 ;
-        sh:node fair2s:IdentifierShape ;
-    ] ;
-
-    sh:property [
-        sh:path fair2:certificationDocument ;
-        sh:minCount 1 ;
-        sh:node fair2s:IdentifierShape ;
-    ] ;
-
-    sh:property [
-        sh:path fair2:verificationEndpoint ;
+        sh:maxCount 1 ;
         sh:nodeKind sh:IRI ;
+        sh:in ( fair2:Certified fair2:Validated ) ;
+        sh:message "fair2ComplianceLevel must be fair2:Certified or fair2:Validated."
     ] ;
 
     sh:property [
         sh:path fair2:certificationScope ;
         sh:minCount 1 ;
-        sh:node fair2s:TextShape ;
+        sh:in ( fair2:MetadataConformance fair2:DataIntegrity fair2:LicenseVerification fair2:ProcessAttestation fair2:TemporalProof ) ;
+        sh:message "certificationScope must draw on the canonical scope tokens. A scope omitting dataIntegrity must be rendered as FAIR2-Certified (metadata only)."
+    ] .
+
+# FAIR2-Certified is an authority assertion, so it carries an issuer, an
+# issue date and the credential that backs it.
+
+fair2s:CertifiedRequirementsShape
+    a sh:NodeShape ;
+    sh:targetClass fair2:Certification ;
+    sh:or (
+        [ sh:not [ sh:property [ sh:path fair2:fair2ComplianceLevel ; sh:hasValue fair2:Certified ] ] ]
+        [
+            sh:property [ sh:path fair2:certifiedBy ; sh:minCount 1 ; sh:node fair2s:OrganizationShape ] ;
+            sh:property [ sh:path fair2:dateIssued ; sh:minCount 1 ; sh:datatype xsd:date ] ;
+            sh:property [ sh:path fair2:certificationDocument ; sh:minCount 1 ; sh:node fair2s:IdentifierShape ]
+        ]
+    ) ;
+    sh:message "A FAIR2-Certified node must carry certifiedBy, dateIssued and certificationDocument." .
+
+# FAIR2-Validated is self-assertable, so it is held to being inspectable
+# instead: the profile checked, the run that produced the claim, and the
+# report. The legacy issuer-based form is still accepted here, and warned
+# about by fair2s:ValidatedLegacyShape below.
+
+fair2s:ValidatedEvidenceShape
+    a sh:NodeShape ;
+    sh:property [ sh:path dct:conformsTo ; sh:minCount 1 ; sh:node fair2s:IdentifierShape ] ;
+    sh:property [ sh:path fair2:validationReport ; sh:minCount 1 ; sh:node fair2s:IdentifierShape ] ;
+    sh:property [
+        sh:path prov:wasGeneratedBy ;
+        sh:minCount 1 ;
+        sh:node [
+            sh:property [ sh:path prov:endedAtTime ; sh:minCount 1 ] ;
+            sh:property [
+                sh:path prov:wasAssociatedWith ;
+                sh:minCount 1 ;
+                sh:node [
+                    sh:property [ sh:path schema:name ; sh:minCount 1 ; sh:node fair2s:TextShape ] ;
+                    sh:property [ sh:path schema:softwareVersion ; sh:minCount 1 ; sh:node fair2s:TextShape ]
+                ]
+            ]
+        ]
+    ] .
+
+fair2s:ValidatedRequirementsShape
+    a sh:NodeShape ;
+    sh:targetClass fair2:Certification ;
+    sh:or (
+        [ sh:not [ sh:property [ sh:path fair2:fair2ComplianceLevel ; sh:hasValue fair2:Validated ] ] ]
+        [ sh:node fair2s:ValidatedEvidenceShape ]
+        [
+            sh:property [ sh:path fair2:certifiedBy ; sh:minCount 1 ] ;
+            sh:property [ sh:path fair2:dateIssued ; sh:minCount 1 ]
+        ]
+    ) ;
+    sh:message "A FAIR2-Validated node must carry its evidence: conformsTo, wasGeneratedBy (an Activity with endedAtTime, associated with a SoftwareAgent having name and softwareVersion) and validationReport." .
+
+fair2s:ValidatedLegacyShape
+    a sh:NodeShape ;
+    sh:targetClass fair2:Certification ;
+    sh:severity sh:Warning ;
+    sh:or (
+        [ sh:not [ sh:property [ sh:path fair2:fair2ComplianceLevel ; sh:hasValue fair2:Validated ] ] ]
+        [ sh:node fair2s:ValidatedEvidenceShape ]
+    ) ;
+    sh:message "Deprecated: this FAIR2-Validated node relies on certifiedBy and dateIssued rather than carrying its evidence. Add conformsTo, wasGeneratedBy and validationReport; the issuer-based form will be removed in a later release." .
+
+# Optional on any Certification, whatever the level.
+
+fair2s:CertificationOptionalShape
+    a sh:NodeShape ;
+    sh:targetClass fair2:Certification ;
+    sh:property [
+        sh:path fair2:verificationEndpoint ;
+        sh:nodeKind sh:IRI ;
+        sh:description "Endpoint at which the certification can be verified."
     ] .

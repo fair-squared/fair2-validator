@@ -6,6 +6,8 @@
 
 fair2s:ArticleShape
     a sh:NodeShape ;
+    # Reaches fair2:DataArticle through rdfs:subClassOf, which requires the
+    # ontology to be loaded alongside these shapes. See shacl-validation.md.
     sh:targetClass schema:ScholarlyArticle ;
     sh:nodeKind sh:IRI ;
 

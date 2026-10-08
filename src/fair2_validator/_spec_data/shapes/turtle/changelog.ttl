@@ -18,20 +18,19 @@ fair2s:UpdateActionShape
     sh:property [
         sh:path schema:description ;
         sh:minCount 1 ;
-        sh:node fair2s:UpdateDescriptionShape ;
+        sh:node fair2s:TextShape ;
+        sh:description "A human-readable summary of the update. schema:description takes Text; the change categories below are siblings, not sub-properties of it."
     ] ;
+
+    sh:property [ sh:path fair2:newFeatures ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path fair2:improvements ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path fair2:bugFixes ; sh:node fair2s:TextShape ] ;
+    sh:property [ sh:path fair2:otherInformation ; sh:node fair2s:TextShape ] ;
 
     sh:property [
         sh:path prov:wasRevisionOf ;
         sh:node fair2s:VersionReferenceShape ;
     ] .
-
-fair2s:UpdateDescriptionShape
-    a sh:NodeShape ;
-    sh:property [ sh:path fair2:newFeatures ; sh:node fair2s:TextShape ] ;
-    sh:property [ sh:path fair2:improvements ; sh:node fair2s:TextShape ] ;
-    sh:property [ sh:path fair2:bugFixes ; sh:node fair2s:TextShape ] ;
-    sh:property [ sh:path fair2:otherInformation ; sh:node fair2s:TextShape ] .
 
 fair2s:VersionReferenceShape
     a sh:NodeShape ;

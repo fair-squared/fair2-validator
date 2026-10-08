@@ -26,7 +26,34 @@ fair2s:DatasetShape
     sh:property [ sh:path schema:url ; sh:minCount 1 ; sh:node fair2s:IdentifierShape ] ;
     sh:property [ sh:path schema:keywords ; sh:minCount 1 ; sh:node fair2s:TextShape ] ;
 
-    sh:property [ sh:path dct:conformsTo ; sh:minCount 1 ; sh:node fair2s:IdentifierShape] ;
+    sh:property [ sh:path dct:conformsTo ; sh:minCount 1 ; sh:node fair2s:IdentifierShape ] ;
+
+    # The FAIR2 spec version the document was produced against. Carried as one
+    # of the dct:conformsTo values, alongside the Croissant version. Until
+    # v1.4.0 this lived in a non-RDF _meta block and had to be enforced outside
+    # SHACL; it is an ordinary constraint now.
+    sh:property [
+        sh:path dct:conformsTo ;
+        sh:qualifiedValueShape [ sh:pattern "^https://fair2\\.ai/spec/v[0-9]+\\.[0-9]+\\.[0-9]+$" ] ;
+        sh:qualifiedMinCount 1 ;
+        sh:message "A dataset must declare the FAIR2 spec version it conforms to, as a https://fair2.ai/spec/vX.Y.Z value of dct:conformsTo."
+    ] ;
+
+    # The metadata document's own version and edit date, distinct from the
+    # dataset's. Both were required fields of the _meta block before v1.4.0.
+    sh:property [
+        sh:path fair2:metadataVersion ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^[0-9]+\\.[0-9]+\\.[0-9]+$" ;
+        sh:message "metadataVersion must be a MAJOR.MINOR.PATCH version for the fair2.json document itself."
+    ] ;
+    sh:property [
+        sh:path fair2:metadataModified ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date
+    ] ;
     sh:property [ sh:path cr:citeAs ; sh:node fair2s:TextShape ] ;
 
     sh:property [
@@ -43,9 +70,13 @@ fair2s:DatasetShape
         sh:minCount 1 ;
         sh:node fair2s:PersonOrOrganizationShape
     ] ;
+    # Roles are stated on the attribution, not on the person: prov:hadRole has
+    # domain prov:Influence, and a role held with no stated relationship is not
+    # scoped to this dataset. schema:contributor is gone - it duplicated
+    # schema:creator, and schema.org's contributor means a secondary one.
     sh:property [
-        sh:path schema:contributor ;
-        sh:node fair2s:ContributorShape
+        sh:path prov:qualifiedAttribution ;
+        sh:node fair2s:AttributionShape
     ] ;
     sh:property [
         sh:path schema:funding ;
@@ -70,7 +101,7 @@ fair2s:DatasetShape
 
     sh:property [ sh:path schema:dateCreated ; sh:datatype xsd:date ] ;
     sh:property [ sh:path schema:datePublished ; sh:datatype xsd:date ] ;
-    sh:property [ sh:path schema:dateUpdated ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path schema:dateModified ; sh:datatype xsd:date ] ;
     sh:property [ sh:path fair2:changeLog ; sh:node fair2s:UpdateActionShape ] ;
     sh:property [ sh:path schema:subjectOf ; sh:node fair2s:CreativeWorkShape ] ;
     sh:property [ sh:path fair2:domain ; sh:node fair2s:DomainShape ] ;
@@ -78,10 +109,22 @@ fair2s:DatasetShape
     sh:property [ sh:path fair2s:socialMedia ; sh:node fair2s:SocialMediaShape ] ;
     sh:property [ sh:path schema:accessRights ; sh:node fair2s:AccessRightsShape ] ;
 
+    # Peer artifacts are referenced by their own identifier, not described
+    # here. Each is governed independently, so inlining a body would let a
+    # change to another artifact invalidate this document and its signature.
     sh:property [
         sh:path fair2:dataArticle ;
         sh:minCount 1 ;
-        sh:node fair2s:ArticleShape
+        sh:nodeKind sh:IRI ;
+        sh:description "The data article, by DOI or other resolvable identifier."
     ] ;
-    sh:property [ sh:path fair2:dataPortal ; sh:node fair2s:DataPortalShape ] ;
-    sh:property [ sh:path fair2:dataArchive ; sh:node fair2s:DataArchiveShape ] .
+    sh:property [
+        sh:path fair2:dataPortal ;
+        sh:nodeKind sh:IRI ;
+        sh:description "The data portal, by its own identifier."
+    ] ;
+    sh:property [
+        sh:path fair2:dataArchive ;
+        sh:nodeKind sh:IRI ;
+        sh:description "The data archive, by its own identifier."
+    ] .
