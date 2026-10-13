@@ -11,6 +11,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix ddi-stats: <http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/> .
 @prefix sec: <https://w3id.org/security#> .
 
 # FAIR2 Ontology — 2026-03-30T12:00:00.000000Z
@@ -33,7 +34,8 @@ fair2:Substep a rdfs:Class ;
 
 fair2:DescriptiveStatistics a rdfs:Class ;
   rdfs:label "DescriptiveStatistics" ;
-  rdfs:comment "Summary statistics computed over a field, RecordSet or Dataset. A bundle of measured values, not a dataset in its own right: declaring it a schema:Dataset made every statistics block a target of fair2s:DatasetShape." ;
+  rdfs:comment "Deprecated. Croissant 1.1 models statistics with cr:annotation, attaching a cr:Field that carries a value rather than a source; FAIR2 documents use that from v1.5.0. This class described the wrapper the superseded fair2:statistics property pointed at, and is retained only so existing references resolve." ;
+  vs:term_status "deprecated" ;
   rdfs:subClassOf schema:StructuredValue .
 
 fair2:Submission a rdfs:Class ;
@@ -78,6 +80,7 @@ fair2:manuscript a rdf:Property ;
 
 fair2:statistics a rdf:Property ;
   rdfs:label "statistics" ;
+  vs:term_status "deprecated" ;
   rdfs:comment "Links to computed descriptive statistics." ;
   schema:domainIncludes cr:Field ;
   schema:rangeIncludes fair2:DescriptiveStatistics ;
@@ -405,3 +408,27 @@ fair2:certifiedDocument a rdf:Property ;
   schema:domainIncludes fair2:FAIR2CertificationCredential ;
   schema:rangeIncludes schema:URL ;
   vs:term_status "stable" .
+
+fair2:SummaryStatistic a rdfs:Class ;
+  rdfs:label "SummaryStatistic" ;
+  rdfs:comment "A kind of descriptive statistic, named in cr:dataType on a cr:annotation. FAIR2 uses DDI-CDI SummaryStatisticType where it has a term; these three cover statistics it does not." ;
+  rdfs:subClassOf skos:Concept ;
+  vs:term_status "stable" .
+
+fair2:DistinctValueCount a fair2:SummaryStatistic ;
+  rdfs:label "unique" ;
+  rdfs:comment "Number of distinct values in the field. DDI-CDI SummaryStatisticType has no equivalent." ;
+  skos:closeMatch ddi-stats:c646dd8 .
+
+fair2:ModalFrequency a fair2:SummaryStatistic ;
+  rdfs:label "freq" ;
+  rdfs:comment "How often the modal value occurs. Pairs with the mode itself, which is ddi-stats:650be61; DDI names the mode but not its frequency." ;
+  skos:closeMatch ddi-stats:650be61 .
+
+fair2:ExpectedValueCount a fair2:SummaryStatistic ;
+  rdfs:label "expected_number_of_values" ;
+  rdfs:comment "How many values the extraction expected to find, against which count and missing_values are read. Describes completeness of the extraction rather than a distribution, so it is deliberately FAIR2-local." .
+
+fair2:FrequencyDistribution a fair2:SummaryStatistic ;
+  rdfs:label "top_10_freq" ;
+  rdfs:comment "Frequency of the most common values, as a JSON object mapping label to count. Carried as an rdf:JSON literal, the same mechanism Croissant uses for cr:data and cr:examples." .

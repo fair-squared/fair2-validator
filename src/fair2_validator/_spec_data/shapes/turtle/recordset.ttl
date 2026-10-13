@@ -30,9 +30,13 @@ fair2s:RecordSetShape
         sh:description "The columns/attributes defined within this record set."
     ] .
 
+# Targets the objects of cr:field, not every cr:Field. A statistic is also a
+# cr:Field - Croissant models statistics as cr:annotation entries - but it
+# carries a value rather than a source, so the data-field requirements below
+# must not reach it. fair2s:AnnotationShape covers those instead.
 fair2s:FieldShape
     a sh:NodeShape ;
-    sh:targetClass cr:Field ;
+    sh:targetObjectsOf cr:field ;
     sh:nodeKind sh:IRI ;
 
     sh:property [
@@ -78,4 +82,29 @@ fair2s:SourceShape
             sh:property [ sh:path cr:column ; sh:minCount 1 ; sh:node fair2s:TextShape ]
         ] ;
         sh:description "The physical column name in the source file."
+    ] .
+
+fair2s:AnnotationShape
+    a sh:NodeShape ;
+    sh:targetObjectsOf cr:annotation ;
+    sh:nodeKind sh:IRI ;
+    sh:description "A statistic or other annotation on a RecordSet or Field, per Croissant's annotation mechanism. It carries a value instead of a source." ;
+
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:node fair2s:TextShape ;
+        sh:description "What the annotation reports, e.g. mean or missing_values."
+    ] ;
+    sh:property [
+        sh:path schema:value ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:description "The value. Its datatype varies by statistic, so none is imposed."
+    ] ;
+    sh:property [
+        sh:path cr:dataType ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description "Optional: the kind of statistic, as a resolvable term. A controlled vocabulary for these is not yet settled."
     ] .

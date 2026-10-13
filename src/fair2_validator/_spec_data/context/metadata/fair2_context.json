@@ -194,6 +194,9 @@
       "alternateName": {
         "@id": "schema:alternateName"
       },
+      "annotation": {
+        "@id": "cr:annotation"
+      },
       "annotationsPerItem": {
         "@id": "rai:annotationsPerItem"
       },
@@ -669,7 +672,8 @@
       "certifiedDocument": {
         "@id": "fair2:certifiedDocument",
         "@type": "@id"
-      }
+      },
+      "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/"
     }
   ]
 }
