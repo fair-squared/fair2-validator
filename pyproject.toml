@@ -33,7 +33,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# The agent-fix layer talks to one provider at a time; install the one you use.
+# `agent` stays an alias for the default provider so existing installs keep working.
 agent = ["anthropic>=0.40"]
+anthropic = ["anthropic>=0.40"]
+openai = ["openai>=2.0"]
+agent-all = ["anthropic>=0.40", "openai>=2.0"]
 dev = ["pytest>=7"]
 
 [project.urls]

@@ -11,6 +11,7 @@ from . import shapes as S
 from .validate import validate
 from .croissant import check_croissant
 from .meta import check_meta
+from . import llm
 
 
 def _run_detection(target: Path, spec, schemas, do_croissant: bool, croissant_only: bool) -> Report:
@@ -52,7 +53,32 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--spec", help="path to a fair2-spec checkout (overrides submodule / FAIR2_SPEC_PATH)")
     p.add_argument("--list-schemas", action="store_true", help="list the sub-schema names and exit")
     p.add_argument("--yes", action="store_true", help="(with --fix) auto-confirm the agent's proposed patch")
+
+    g = p.add_argument_group(
+        "agent model (--fix)",
+        "Each also reads an environment variable; the flag wins. "
+        f"Defaults: {llm.DEFAULT_PROVIDER}, "
+        + ", ".join(f"{k}={v}" for k, v in llm.DEFAULT_MODELS.items()) + ".")
+    g.add_argument("--provider", choices=llm.PROVIDERS,
+                   help="which API to call (env: FAIR2_AGENT_PROVIDER). Inferred from "
+                        "--model when omitted.")
+    g.add_argument("--model", help="model name (env: FAIR2_AGENT_MODEL)")
+    g.add_argument("--effort", help="reasoning effort, e.g. low/medium/high "
+                                    "(env: FAIR2_AGENT_EFFORT). Reasoning models only.")
+    g.add_argument("--max-tokens", type=int,
+                   help=f"cap on the agent's output (env: FAIR2_AGENT_MAX_TOKENS, "
+                        f"default {llm.DEFAULT_MAX_TOKENS})")
     args = p.parse_args(argv)
+
+    agent_flags = (args.provider, args.model, args.effort, args.max_tokens)
+    cfg = None
+    if args.fix or any(f is not None for f in agent_flags):
+        try:
+            cfg = llm.resolve(model=args.model, provider=args.provider,
+                              effort=args.effort, max_tokens=args.max_tokens)
+        except llm.ConfigError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 2
 
     if args.list_schemas:
         print("Available sub-schemas (--schema):")
@@ -92,7 +118,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as e:
         print(f"\nerror: agent layer unavailable: {e}", file=sys.stderr)
         return 3
-    return plan_and_fix(target, rep, spec, auto_confirm=args.yes,
+    return plan_and_fix(target, rep, spec, auto_confirm=args.yes, cfg=cfg,
                         rerun=lambda: _run_detection(target, spec, schemas,
                                                      do_croissant=not args.no_croissant,
                                                      croissant_only=args.croissant_only))

@@ -7,21 +7,20 @@ of node-scoped operations. The tool renders the plan + a diff, asks the user to
 confirm, applies the operations, and re-runs detection — looping until the
 document is clean, no progress is made, or the user declines.
 
-Model: defaults to claude-opus-4-8 (override with FAIR2_AGENT_MODEL). Requires
-ANTHROPIC_API_KEY.
+The model is configurable across providers (Anthropic, OpenAI) — see `llm.py`
+for the resolution order and the environment variables it reads.
 """
 from __future__ import annotations
 
 import copy
 import json
-import os
 from pathlib import Path
 
 from .report import Report
 from .heuristics import heuristics_text
+from . import llm
 from . import shapes as S
 
-MODEL = os.environ.get("FAIR2_AGENT_MODEL", "claude-opus-4-8")
 MAX_ROUNDS = 3
 
 OPERATIONS_SCHEMA = {
@@ -174,19 +173,38 @@ def _build_user_prompt(doc, report):
     return "\n\n".join(parts)
 
 
-def _plan(doc, report):
-    import anthropic
-    client = anthropic.Anthropic()
-    resp = client.messages.create(
-        model=MODEL,
-        max_tokens=16000,
-        thinking={"type": "adaptive"},
-        system=SYSTEM,
-        messages=[{"role": "user", "content": _build_user_prompt(doc, report)}],
-        output_config={"format": {"type": "json_schema", "schema": OPERATIONS_SCHEMA}},
-    )
-    text = next((b.text for b in resp.content if b.type == "text"), "{}")
-    return json.loads(text)
+_REQUIRED_OP_FIELDS = ("description", "rule", "target", "op", "path")
+
+
+def validate_plan(plan):
+    """Check a reply before anything is rendered, applied or written.
+
+    Only the Anthropic path can guarantee schema adherence: OpenAI's strict
+    mode cannot express an operation `value` of arbitrary JSON type, so the
+    schema is sent there as guidance and the reply is checked here instead.
+    The check is provider-independent so both paths fail the same way.
+    """
+    if not isinstance(plan.get("plan", ""), str):
+        raise ValueError("'plan' must be a string")
+    ops = plan.get("operations", [])
+    if not isinstance(ops, list):
+        raise ValueError("'operations' must be a list")
+    for i, o in enumerate(ops, 1):
+        if not isinstance(o, dict):
+            raise ValueError(f"operation {i} is not an object")
+        missing = [f for f in _REQUIRED_OP_FIELDS if f not in o]
+        if missing:
+            raise ValueError(f"operation {i} is missing {', '.join(missing)}")
+        if o["op"] not in ("set", "delete"):
+            raise ValueError(f"operation {i} has unknown op {o['op']!r}")
+        if o["op"] == "set" and "value" not in o:
+            raise ValueError(f"operation {i} is a 'set' with no value")
+    return plan
+
+
+def _plan(doc, report, cfg):
+    reply = llm.complete_json(cfg, SYSTEM, _build_user_prompt(doc, report), OPERATIONS_SCHEMA)
+    return validate_plan(reply)
 
 
 def _render_ops(plan):
@@ -198,23 +216,21 @@ def _render_ops(plan):
     return "\n".join(lines)
 
 
-def plan_and_fix(target: Path, report: Report, spec, auto_confirm: bool = False, rerun=None) -> int:
+def plan_and_fix(target: Path, report: Report, spec, auto_confirm: bool = False, rerun=None,
+                 cfg: llm.ModelConfig | None = None) -> int:
     target = Path(target)
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("error: --fix needs ANTHROPIC_API_KEY (the agent plans and applies fixes).")
-        return 3
-    try:
-        import anthropic  # noqa: F401
-    except Exception:
-        print("error: the agent layer needs the 'anthropic' package (pip install anthropic).")
+    cfg = cfg or llm.resolve()
+    problem = llm.preflight(cfg)
+    if problem:
+        print(f"error: --fix cannot run: {problem}")
         return 3
 
     current = report
     for rnd in range(1, MAX_ROUNDS + 1):
         doc = json.loads(target.read_text())
-        print(f"\n=== Agent fix round {rnd}/{MAX_ROUNDS} (model: {MODEL}) ===")
+        print(f"\n=== Agent fix round {rnd}/{MAX_ROUNDS} ({cfg}) ===")
         try:
-            plan = _plan(doc, current)
+            plan = _plan(doc, current, cfg)
         except Exception as e:
             print(f"agent error: {type(e).__name__}: {str(e)[:200]}")
             return 3

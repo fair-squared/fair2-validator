@@ -16,10 +16,11 @@ reconcile the reference example, as a reusable tool:
 - **Findings point at the JSON.** Every finding carries the source-file location
   to edit (`json: $["@graph"][0].methodSection[0].name`); violations on blank
   nodes are described by their `name`/`@type` and their containing object.
-- **Fixing is agent-driven and confirm-before-apply.** With `--fix`, a Claude
-  agent analyses the findings, **plans** the change, shows you the operations,
-  and applies them **only after you confirm** — then re-validates. Nothing is
-  written without an explicit yes.
+- **Fixing is agent-driven and confirm-before-apply.** With `--fix`, a model
+  analyses the findings, **plans** the change, shows you the operations, and
+  applies them **only after you confirm** — then re-validates. Nothing is
+  written without an explicit yes. The model is configurable: Anthropic or
+  OpenAI, any model either serves.
 
 ## Install
 
@@ -29,14 +30,20 @@ pip install fair2-validator
 
 The pinned FAIR² spec (shapes + context + golden example) is **vendored into the
 package**, so a plain `pip install` is self-contained — no submodule needed. The
-agent-fix layer needs an extra: `pip install "fair2-validator[agent]"`.
+agent-fix layer needs the SDK for whichever provider you use:
+
+```bash
+pip install "fair2-validator[anthropic]"   # or [agent], the same thing
+pip install "fair2-validator[openai]"
+pip install "fair2-validator[agent-all]"   # both
+```
 
 For a development checkout (spec as an editable git submodule):
 
 ```bash
 git clone --recurse-submodules <this repo>
 cd fair2-validator
-pip install -e ".[dev,agent]"
+pip install -e ".[dev,agent-all]"
 ```
 
 Spec resolution order: `--spec PATH` → `FAIR2_SPEC_PATH` → the `fair2-spec`
@@ -60,8 +67,13 @@ fair2-validate path/to/fair2.json --croissant-only
 fair2-validate --list-schemas
 
 # agent proposes a fix, shows the diff, applies only on confirmation
-fair2-validate path/to/fair2.json --fix          # requires ANTHROPIC_API_KEY
+fair2-validate path/to/fair2.json --fix          # default provider (Anthropic)
 fair2-validate path/to/fair2.json --fix --yes    # auto-confirm the agent's plan
+
+# pick a different model or provider
+fair2-validate path/to/fair2.json --fix --model claude-sonnet-5-5
+fair2-validate path/to/fair2.json --fix --model gpt-5.1 --effort high
+fair2-validate path/to/fair2.json --fix --provider openai
 ```
 
 ### Sub-schemas
@@ -84,9 +96,41 @@ plus a set of **node-scoped operations** (`target` = `context` or a node `@id`;
 operations to a copy, asks you to confirm, writes, and re-validates — looping up
 to a few rounds until the document conforms and loads or you decline.
 
-- Model: defaults to `claude-opus-4-8` (override with `FAIR2_AGENT_MODEL`).
-- Requires `ANTHROPIC_API_KEY`. The deterministic detection core needs no key
-  and runs fully offline.
+The deterministic detection core needs no API key and runs fully offline; only
+`--fix` calls a model.
+
+### Choosing a model
+
+Each setting takes a flag or an environment variable, and the flag wins:
+
+| Flag | Environment | Default |
+|---|---|---|
+| `--provider {anthropic,openai}` | `FAIR2_AGENT_PROVIDER` | `anthropic` |
+| `--model` | `FAIR2_AGENT_MODEL` | `claude-opus-5-5` / `gpt-5.1` |
+| `--effort` | `FAIR2_AGENT_EFFORT` | the provider's own |
+| `--max-tokens` | `FAIR2_AGENT_MAX_TOKENS` | `16000` |
+
+Given a model but no provider, the provider is inferred from the model name
+(`claude-*` → Anthropic; `gpt-*`, `o1/o3/o4-*`, `chatgpt-*` → OpenAI). Naming
+the provider explicitly always wins over that inference, which is how you reach
+a gateway that serves one vendor's models over the other's wire format:
+
+```bash
+OPENAI_BASE_URL=https://gateway.example/v1 \
+  fair2-validate doc.json --fix --provider openai --model claude-opus-5-5
+```
+
+`--effort` only means something on reasoning models (Claude 4.6+, GPT-5 /
+o-series); it is omitted from the request entirely when unset, so non-reasoning
+models such as `gpt-4o` work unchanged.
+
+Each provider is called through **its own SDK** — `anthropic.messages.create`
+with `output_config.format`, `openai.responses.create` with `text.format` —
+rather than routing one vendor through the other's compatibility shim.
+
+**Credentials.** Anthropic reads `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, or
+an `ant auth login` profile; OpenAI reads `OPENAI_API_KEY`. `--fix` checks for a
+usable credential before spending anything and tells you which one is missing.
 
 ## Keeping the spec current
 
