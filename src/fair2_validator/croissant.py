@@ -14,11 +14,25 @@ from pathlib import Path
 from .report import Finding
 from .nodepath import NodeIndex
 
+# Rule 2 (docs/integration/ml-croissant.md), as narrowed in spec v1.4.0.
+#
+# Properties referencing other nodes must not be coerced with "@type":"@id":
+# the parser turns their values into shared nodes, which mlcroissant mutates
+# (Rule 1).  dataArticle / dataPortal / dataArchive left this list in v1.4.0:
+# their bodies are gone from the document, the spec's own context coerces them
+# so they can be written as bare URI strings, and the reference example loads
+# identically either way.
 CROSS_GRAPH_PROPS = {
-    "citation", "dataArticle", "dataPortal", "dataArchive", "dataset",
+    "citation", "dataset",
     "wasAssociatedWith", "wasGeneratedBy", "wasDerivedFrom", "wasRevisionOf",
     "generated", "next", "url",
 }
+# The case confirmed to break loading, for a different reason: mlcroissant
+# reads conformsTo to choose which Croissant version's rules apply, and an IRI
+# where it expects a string makes it reject the document (16 type errors on the
+# reference example).
+VERSION_PROPS = {"conformsTo"}
+_CONFORMS_TO_IRIS = {"dct:conformsTo", "http://purl.org/dc/terms/conformsTo"}
 
 
 def _load_json(target: Path) -> dict:
@@ -113,9 +127,19 @@ def static_rules(target: Path) -> list[Finding]:
                            rule="mlcroissant Rule 1/3",
                            suggestion="break the cycle: make the back-edge a plain string, drop it, or inline as a fresh blank node."))
 
-    # Rule 2 — @type:@id on cross-graph properties
+    # Rule 2 — "@type":"@id" coercions mlcroissant cannot take
     for term, defn in ctx.items():
-        if term in CROSS_GRAPH_PROPS and isinstance(defn, dict) and defn.get("@type") == "@id":
+        if not (isinstance(defn, dict) and defn.get("@type") == "@id"):
+            continue
+        if term in VERSION_PROPS or defn.get("@id") in _CONFORMS_TO_IRIS:
+            out.append(Finding("rule", "violation",
+                               f"@context term '{term}' coerces conformsTo to an IRI; mlcroissant "
+                               f"reads it as a string to pick the Croissant version's rules",
+                               json_path=index.context_path(term),
+                               rule="mlcroissant Rule 2",
+                               suggestion=f"remove \"@type\":\"@id\" from '{term}' and keep the "
+                                          f"conformsTo values plain strings."))
+        elif term in CROSS_GRAPH_PROPS:
             out.append(Finding("rule", "violation",
                                f"@context term '{term}' uses \"@type\":\"@id\" on a cross-graph property",
                                json_path=index.context_path(term),

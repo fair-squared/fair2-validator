@@ -13,9 +13,16 @@ from . import shapes as S
 SH = S.SH
 
 
+def _document_base(target: Path) -> str:
+    """The IRI a relative @id resolves against when the context sets no @base:
+    the document's own location.  The parser and the JSON index are given the
+    same one, so every focus node can be traced back to its place in the JSON."""
+    return Path(target).resolve().as_uri()
+
+
 def _load_data(target: Path) -> rdflib.Graph:
     g = rdflib.Graph()
-    g.parse(str(target), format="json-ld")
+    g.parse(str(target), format="json-ld", publicID=_document_base(target))
     return g
 
 
@@ -77,15 +84,28 @@ def _findings_from_report(report_graph: rdflib.Graph, source: str,
                           index: NodeIndex | None = None,
                           data: rdflib.Graph | None = None) -> list[Finding]:
     out: list[Finding] = []
+    # Each problem once.  A node reached along two routes - a field is both a
+    # target of FieldShape and a value its record set's sh:node checks - fails
+    # twice, and the second failure arrives as a wrapper ("does not conform to
+    # Shape …") whose sh:detail repeats the first.  Results carrying a detail
+    # are skipped: their causes are results in their own right, so nothing is
+    # lost, and identical causes are collapsed below.
     q = """
     PREFIX sh: <http://www.w3.org/ns/shacl#>
-    SELECT ?focus ?path ?msg ?sev WHERE {
+    SELECT DISTINCT ?focus ?path ?msg ?sev ?comp WHERE {
       ?r a sh:ValidationResult ; sh:focusNode ?focus .
+      FILTER NOT EXISTS { ?r sh:detail ?detail }
       OPTIONAL { ?r sh:resultPath ?path }
       OPTIONAL { ?r sh:resultMessage ?msg }
       OPTIONAL { ?r sh:resultSeverity ?sev }
+      OPTIONAL { ?r sh:sourceConstraintComponent ?comp }
     }"""
+    seen: set[tuple] = set()
     for row in report_graph.query(q):
+        key = (row.focus, row.path, row.msg, row.sev, row.comp)
+        if key in seen:
+            continue
+        seen.add(key)
         path = str(row.path).split("/")[-1].split("#")[-1] if row.path else ""
         sev = "violation"
         if row.sev and str(row.sev).endswith("Warning"):
@@ -136,7 +156,7 @@ def validate(target: Path, spec: Spec, schemas: list[str] | None = None) -> Repo
     scope = "full" if not schemas or schemas == ["dataset"] else ",".join(schemas)
     rep = Report(target=str(target), spec_version=spec.version, scope=scope)
     data = _load_data(target)
-    index = NodeIndex(target)
+    index = NodeIndex(target, default_base=_document_base(target))
     ont = _ontology_graph(spec)
     if ont is None:
         rep.add(Finding("shacl", "warning",
@@ -159,6 +179,9 @@ def validate(target: Path, spec: Spec, schemas: list[str] | None = None) -> Repo
         return rep
 
     rep.shacl_conforms = True
+    # Overlapping sub-schemas (recordSet's closure includes field) would report
+    # a shared problem once per sub-schema; the first to find it reports it.
+    reported: set[tuple] = set()
     for name in schemas:
         if name not in S.SHAPE_MAP:
             rep.add(Finding("shacl", "warning", f"unknown sub-schema '{name}'",
@@ -179,6 +202,10 @@ def validate(target: Path, spec: Spec, schemas: list[str] | None = None) -> Repo
         if not conforms:
             rep.shacl_conforms = False
         for f in _findings_from_report(rg, "shacl", index, data):
+            key = (f.severity, f.message, f.locus)
+            if key in reported:
+                continue
+            reported.add(key)
             f.message = f"[{name}] {f.message}"
             rep.add(f)
     return rep

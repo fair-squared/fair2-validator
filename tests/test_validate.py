@@ -207,3 +207,52 @@ def test_malformed_spec_conformsto_is_a_shacl_violation(spec, golden, tmp_path):
 
     rep = validate(broken, spec)
     assert rep.shacl_conforms is False, rep.render()
+
+
+def _golden_variant(golden, tmp_path, mutate):
+    doc = json.loads(golden.read_text())
+    mutate(doc)
+    out = tmp_path / "variant.json"
+    out.write_text(json.dumps(doc))
+    return out
+
+
+def _inline_context(doc):
+    ctx = doc["@context"]
+    return next(el for el in ctx if isinstance(el, dict)) if isinstance(ctx, list) else ctx
+
+
+@pytest.mark.parametrize("schemas", [None, ["recordSet"], ["recordSet", "field"]])
+def test_each_problem_is_reported_once_and_located(spec, golden, tmp_path, schemas):
+    """A field is reached directly (FieldShape's target) and through its record
+    set (sh:node), so pyshacl reports a missing description twice, the second
+    time inside a 'does not conform to FieldShape' wrapper.  One finding, with
+    the JSON location to edit."""
+    variant = _golden_variant(golden, tmp_path,
+                              lambda d: d["recordSet"][0]["field"][0].pop("description"))
+    rep = validate(variant, spec, schemas)
+    hits = [f for f in rep.findings if f.locus.endswith("→ description")]
+    assert len(hits) == 1, [f.message for f in rep.findings]
+    assert hits[0].json_path == "$.recordSet[0].field[0].description"
+    assert not any("does not conform to Shape" in f.message for f in rep.findings)
+
+
+def test_golden_has_no_croissant_rule_violations(golden):
+    """The spec's own reference example must satisfy the Compatibility Rules as
+    the spec states them; a stale rule list flagged three coercions it needs."""
+    assert [f.message for f in static_rules(golden) if f.severity == "violation"] == []
+
+
+def test_conformsto_coerced_to_iri_is_flagged(golden, tmp_path):
+    """The Rule 2 case confirmed to break loading."""
+    variant = _golden_variant(golden, tmp_path, lambda d: _inline_context(d).update(
+        conformsTo={"@id": "dct:conformsTo", "@type": "@id"}))
+    rule2 = [f for f in static_rules(variant) if f.rule == "mlcroissant Rule 2"]
+    assert len(rule2) == 1 and "conformsTo" in rule2[0].message
+
+
+def test_peer_artifact_coercion_is_not_flagged(golden):
+    """dataArticle / dataPortal / dataArchive left Rule 2 in spec v1.4.0."""
+    ctx = _inline_context(json.loads(golden.read_text()))
+    assert ctx["dataArticle"].get("@type") == "@id"   # the spec relies on it
+    assert not [f for f in static_rules(golden) if "dataArticle" in f.message]

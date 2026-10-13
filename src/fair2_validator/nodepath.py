@@ -55,9 +55,11 @@ def _render_path(path: list) -> str:
 class NodeIndex:
     """Resolves a node identifier (raw @id or expanded IRI) to its JSON path."""
 
-    def __init__(self, target: Path):
+    def __init__(self, target: Path, default_base: str = ""):
         self.doc = json.loads(Path(target).read_text())
-        self.base = _base_of(self.doc)
+        # @context's @base when set; otherwise whatever the parser resolved
+        # relative @ids against (validate.py passes the document's location).
+        self.base = _base_of(self.doc) or default_base
         self._by_raw: dict[str, tuple[list, int]] = {}
         self._by_iri: dict[str, tuple[list, int]] = {}
         self._index(self.doc, [])
