@@ -24,9 +24,20 @@ reconcile the reference example, as a reusable tool:
 
 ## Install
 
+Not on PyPI yet — install from a release tag:
+
 ```bash
-pip install fair2-validator
+pip install "fair2-validator @ git+https://github.com/fair-squared/fair2-validator@v0.3.0"
 ```
+
+or, as a dependency in `pyproject.toml`:
+
+```toml
+"fair2-validator @ git+https://github.com/fair-squared/fair2-validator@v0.3.0"
+```
+
+Every release also attaches the wheel to its
+[GitHub Release](https://github.com/fair-squared/fair2-validator/releases).
 
 The pinned FAIR² spec (shapes + context + golden example) is **vendored into the
 package**, so a plain `pip install` is self-contained — no submodule needed. The
@@ -152,23 +163,27 @@ make test       # offline detection tests (agent-fix tests are not run in CI)
 make validate   # validate the canonical golden example
 ```
 
-## Publishing to PyPI
+## Releasing
 
-Releases are cut by pushing a version tag; a GitHub Actions workflow
-(`.github/workflows/release.yml`) builds the artifacts and publishes them via
-PyPI [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (OIDC — no
-stored token).
+Releases are cut by pushing a version tag. The workflow
+(`.github/workflows/release.yml`) builds the wheel and sdist and attaches them to
+a GitHub Release.
 
 ```bash
-# 1. bump `version` in pyproject.toml, commit
+# 1. bump `version` in pyproject.toml and `__version__` in __init__.py, commit
+#    (a test fails if the two disagree)
 # 2. tag and push
-git tag v0.2.0
-git push origin v0.2.0
+git tag -a vX.Y.Z -m "vX.Y.Z"
+git push origin vX.Y.Z
 ```
 
-One-time PyPI setup: on the project's *Publishing* settings, add a GitHub trusted
-publisher (owner `fair-squared`, repo `fair2-validator`, workflow `release.yml`,
-environment `pypi`). To build/publish manually instead:
+**PyPI is off for now.** The workflow also has a PyPI job using
+[Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (OIDC — no stored
+token), skipped until it is set up. To enable it: on pypi.org add a pending
+trusted publisher (project `fair2-validator`, owner `fair-squared`, repo
+`fair2-validator`, workflow `release.yml`, environment `pypi`), then set the
+repository variable `PYPI_PUBLISH=true`. Consumers then switch their dependency
+to `fair2-validator>=X.Y.Z`. To build/publish manually instead:
 
 ```bash
 make build                  # re-vendors spec, builds sdist+wheel, verifies contents

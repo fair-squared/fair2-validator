@@ -52,3 +52,12 @@ def test_bundled_spec_matches_submodule():
         f"missing={src_files - dst_files} extra={dst_files - src_files}")
     mismatch = [n for n in src_files if not filecmp.cmp(src / n, dst / n, shallow=False)]
     assert not mismatch, f"vendored shapes differ from submodule (run `make sync-spec`): {mismatch}"
+
+
+def test_version_matches_pyproject():
+    """__version__ and pyproject's version are bumped by hand; keep them together."""
+    import re
+    import fair2_validator
+    pyproject = (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text()
+    declared = re.search(r'^version = "([^"]+)"', pyproject, re.M).group(1)
+    assert fair2_validator.__version__ == declared

@@ -1,10 +1,16 @@
 name: release
 
-# Publish to PyPI when a version tag is pushed (e.g. `git tag v0.2.0 && git push --tags`).
-# Uses PyPI Trusted Publishing (OIDC) — no API token stored in the repo.
-# One-time setup on PyPI: project settings -> Publishing -> add a GitHub trusted
-# publisher with owner=fair-squared, repo=fair2-validator, workflow=release.yml,
-# environment=pypi.
+# Cut a release when a version tag is pushed (`git tag vX.Y.Z && git push origin vX.Y.Z`).
+#
+# Every tag creates a GitHub Release with the wheel and sdist attached. Consumers
+# install from the tag (`fair2-validator @ git+https://github.com/fair-squared/
+# fair2-validator@vX.Y.Z`) or from the attached wheel.
+#
+# Publishing to PyPI is OFF until a trusted publisher is registered there: the
+# v0.2.0 run failed with `invalid-publisher` for that reason. To turn it on,
+# register the publisher on pypi.org (owner=fair-squared, repo=fair2-validator,
+# workflow=release.yml, environment=pypi), then set the repository variable
+# PYPI_PUBLISH=true. Trusted Publishing uses OIDC; no token is stored here.
 
 on:
   push:
@@ -47,8 +53,28 @@ jobs:
           name: dist
           path: dist/
 
+  github-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # create the release and upload its assets
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Create the GitHub Release with the built artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
+
   publish:
     needs: build
+    if: vars.PYPI_PUBLISH == 'true'
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
