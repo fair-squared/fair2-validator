@@ -27,13 +27,13 @@ reconcile the reference example, as a reusable tool:
 Not on PyPI yet — install from a release tag:
 
 ```bash
-pip install "fair2-validator @ git+https://github.com/fair-squared/fair2-validator@v0.3.0"
+pip install "fair2-validator @ git+https://github.com/fair-squared/fair2-validator@v0.3.1"
 ```
 
 or, as a dependency in `pyproject.toml`:
 
 ```toml
-"fair2-validator @ git+https://github.com/fair-squared/fair2-validator@v0.3.0"
+"fair2-validator @ git+https://github.com/fair-squared/fair2-validator@v0.3.1"
 ```
 
 Every release also attaches the wheel to its

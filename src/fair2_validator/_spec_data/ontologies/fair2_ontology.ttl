@@ -81,10 +81,9 @@ fair2:manuscript a rdf:Property ;
 fair2:statistics a rdf:Property ;
   rdfs:label "statistics" ;
   vs:term_status "deprecated" ;
-  rdfs:comment "Links to computed descriptive statistics." ;
+  rdfs:comment "Deprecated. Linked a field to computed descriptive statistics; superseded from v1.5.0 by cr:annotation, which attaches each statistic as a cr:Field carrying a value. Retained only so existing references resolve." ;
   schema:domainIncludes cr:Field ;
-  schema:rangeIncludes fair2:DescriptiveStatistics ;
-  vs:term_status "stable" .
+  schema:rangeIncludes fair2:DescriptiveStatistics .
 
 fair2:step a rdf:Property ;
   rdfs:label "step" ;

@@ -19,8 +19,7 @@ fair2s:RecordSetShape
     sh:property [
         sh:path schema:description ;
         sh:minCount 1 ;
-        sh:node fair2s:TextShape ;
-        sh:message "Name must be a string or a language-tagged string."
+        sh:node fair2s:TextShape
     ] ;
 
     sh:property [
@@ -48,8 +47,7 @@ fair2s:FieldShape
     sh:property [
         sh:path schema:description ;
         sh:minCount 1 ;
-        sh:node fair2s:TextShape ;
-        sh:message "Name must be a string or a language-tagged string."
+        sh:node fair2s:TextShape
     ] ;
     sh:property [
         sh:path cr:dataType ;
