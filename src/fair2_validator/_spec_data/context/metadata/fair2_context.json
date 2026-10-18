@@ -685,7 +685,131 @@
         "@id": "fair2:certifiedDocument",
         "@type": "@id"
       },
-      "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/"
+      "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/",
+      "oa": "http://www.w3.org/ns/oa#",
+      "geocr": "http://mlcommons.org/croissant/geo/",
+      "csvw": "http://www.w3.org/ns/csvw#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "role": {
+        "@id": "fair2:role"
+      },
+      "roleSource": {
+        "@id": "fair2:roleSource"
+      },
+      "valueConstraints": {
+        "@id": "fair2:valueConstraints"
+      },
+      "unitSingular": {
+        "@id": "fair2:unitSingular"
+      },
+      "unitPlural": {
+        "@id": "fair2:unitPlural"
+      },
+      "unitLabelSource": {
+        "@id": "fair2:unitLabelSource"
+      },
+      "primaryMeasure": {
+        "@id": "fair2:primaryMeasure"
+      },
+      "encrypted": {
+        "@id": "fair2:encrypted"
+      },
+      "rowCount": {
+        "@id": "fair2:rowCount"
+      },
+      "contextLoad": {
+        "@id": "fair2:contextLoad"
+      },
+      "renameRule": {
+        "@id": "fair2:renameRule",
+        "@type": "@json"
+      },
+      "retrievedOn": {
+        "@id": "fair2:retrievedOn",
+        "@type": "xsd:dateTime"
+      },
+      "retrievalMethod": {
+        "@id": "fair2:retrievalMethod"
+      },
+      "declaredLicenses": {
+        "@id": "fair2:declaredLicenses"
+      },
+      "resolvedBy": {
+        "@id": "fair2:resolvedBy"
+      },
+      "easting": {
+        "@id": "fair2:easting"
+      },
+      "northing": {
+        "@id": "fair2:northing"
+      },
+      "InferredJoin": {
+        "@id": "fair2:InferredJoin"
+      },
+      "fromField": {
+        "@id": "fair2:fromField"
+      },
+      "toField": {
+        "@id": "fair2:toField"
+      },
+      "cardinality": {
+        "@id": "fair2:cardinality"
+      },
+      "confidence": {
+        "@id": "fair2:confidence"
+      },
+      "matchedCount": {
+        "@id": "fair2:matchedCount"
+      },
+      "sourceDistinct": {
+        "@id": "fair2:sourceDistinct"
+      },
+      "targetDistinct": {
+        "@id": "fair2:targetDistinct"
+      },
+      "matchRate": {
+        "@id": "fair2:matchRate"
+      },
+      "uniqueness": {
+        "@id": "fair2:uniqueness"
+      },
+      "PrivacyScreening": {
+        "@id": "fair2:PrivacyScreening"
+      },
+      "subjectType": {
+        "@id": "fair2:subjectType"
+      },
+      "decision": {
+        "@id": "fair2:decision"
+      },
+      "action": {
+        "@id": "fair2:action"
+      },
+      "userOverride": {
+        "@id": "fair2:userOverride"
+      },
+      "narrativeWithheld": {
+        "@id": "fair2:narrativeWithheld"
+      },
+      "IntegrityAssessment": {
+        "@id": "fair2:IntegrityAssessment"
+      },
+      "overallScore": {
+        "@id": "fair2:overallScore"
+      },
+      "checks": {
+        "@id": "fair2:checks",
+        "@type": "@json"
+      },
+      "severity": {
+        "@id": "fair2:severity"
+      },
+      "complianceStatus": {
+        "@id": "fair2:complianceStatus"
+      },
+      "matchSource": {
+        "@id": "fair2:matchSource"
+      }
     }
   ]
 }

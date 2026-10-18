@@ -3,6 +3,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix cr: <http://mlcommons.org/croissant/> .
 @prefix fair2s: <https://fair2.ai/shapes/> .
+@prefix fair2: <https://fair2.ai/ns/> .
 
 # One downloadable file. Shape IRIs live in fair2s:; until v1.5.4 this one was
 # minted as schema:DistributionShape while dataset.ttl referenced
@@ -12,6 +13,11 @@ fair2s:DistributionShape
     a sh:NodeShape ;
     sh:targetClass cr:FileObject ;
     sh:nodeKind sh:IRI ;
+    sh:property [
+        sh:path fair2:encrypted ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+    ] ;
 
     sh:property [
         sh:path schema:name ;
@@ -48,6 +54,11 @@ fair2s:FileSetShape
     a sh:NodeShape ;
     sh:targetClass cr:FileSet ;
     sh:nodeKind sh:IRI ;
+    sh:property [
+        sh:path fair2:encrypted ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+    ] ;
     sh:property [
         sh:path schema:name ;
         sh:node fair2s:TextShape ;

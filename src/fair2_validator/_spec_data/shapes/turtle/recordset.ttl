@@ -4,6 +4,7 @@
 @prefix fair2s: <https://fair2.ai/shapes/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix fair2: <https://fair2.ai/ns/> .
 
 fair2s:RecordSetShape
     a sh:NodeShape ;
@@ -27,6 +28,16 @@ fair2s:RecordSetShape
         sh:minCount 1 ;
         sh:node fair2s:FieldShape ;
         sh:description "The columns/attributes defined within this record set."
+    ] ;
+    sh:property [
+        sh:path fair2:unitSingular ;
+        sh:maxCount 1 ;
+        sh:node fair2s:TextShape ;
+    ] ;
+    sh:property [
+        sh:path fair2:unitPlural ;
+        sh:maxCount 1 ;
+        sh:node fair2s:TextShape ;
     ] .
 
 # Targets the objects of cr:field, not every cr:Field. A statistic is also a
@@ -54,6 +65,13 @@ fair2s:FieldShape
         sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
         sh:description "The semantic type of the data (e.g., schema:Float)."
+    ] ;
+    # A pattern rather than sh:in: the context's @language makes these strings
+    # language-tagged, which sh:in would compare as different terms.
+    sh:property [
+        sh:path fair2:role ;
+        sh:maxCount 1 ;
+        sh:pattern "^(identifier|dimension|measure|count|category|datetime|geo|filemeta)$" ;
     ] ;
 
     sh:property [

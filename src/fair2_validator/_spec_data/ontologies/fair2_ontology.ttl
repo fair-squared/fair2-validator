@@ -13,6 +13,7 @@
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix ddi-stats: <http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/> .
 @prefix sec: <https://w3id.org/security#> .
+@prefix oa: <http://www.w3.org/ns/oa#> .
 
 # FAIR2 Ontology — 2026-03-30T12:00:00.000000Z
 # Includes only terms used in published datasets.
@@ -416,13 +417,12 @@ fair2:SummaryStatistic a rdfs:Class ;
 
 fair2:DistinctValueCount a fair2:SummaryStatistic ;
   rdfs:label "unique" ;
-  rdfs:comment "Number of distinct values in the field. DDI-CDI SummaryStatisticType has no equivalent." ;
-  skos:closeMatch ddi-stats:c646dd8 .
+  rdfs:comment "Number of distinct values in the field. DDI-CDI SummaryStatisticType has no equivalent; its c646dd8 is Valid cases, the count of non-missing values." .
 
 fair2:ModalFrequency a fair2:SummaryStatistic ;
   rdfs:label "freq" ;
   rdfs:comment "How often the modal value occurs. Pairs with the mode itself, which is ddi-stats:650be61; DDI names the mode but not its frequency." ;
-  skos:closeMatch ddi-stats:650be61 .
+  skos:related ddi-stats:650be61 .
 
 fair2:ExpectedValueCount a fair2:SummaryStatistic ;
   rdfs:label "expected_number_of_values" ;
@@ -431,3 +431,276 @@ fair2:ExpectedValueCount a fair2:SummaryStatistic ;
 fair2:FrequencyDistribution a fair2:SummaryStatistic ;
   rdfs:label "top_10_freq" ;
   rdfs:comment "Frequency of the most common values, as a JSON object mapping label to count. Carried as an rdf:JSON literal, the same mechanism Croissant uses for cr:data and cr:examples." .
+
+# ---------------------------------------------------------------------------
+# Added in v1.6.0, status "testing": terms first needed by a producer's
+# output (the data wrangler), defined where no existing term in the
+# vocabularies fair2.json uses says the same thing. Terms describing the
+# data come first; terms recording how it was processed follow.
+# ---------------------------------------------------------------------------
+
+
+fair2:role a rdf:Property ;
+  rdfs:label "role" ;
+  rdfs:comment "The role a field plays in its record set: identifier, dimension, measure, count, category, datetime, geo or filemeta. identifier corresponds to cr:key on the record set; dimension, measure and the attribute-like roles to the RDF Data Cube component properties qb:DimensionProperty, qb:MeasureProperty and qb:AttributeProperty." ;
+  schema:domainIncludes cr:Field ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:roleSource a rdf:Property ;
+  rdfs:label "roleSource" ;
+  rdfs:comment "Whether a field's role was asserted by a curator or computed from the data: asserted or computed." ;
+  schema:domainIncludes cr:Field, schema:PropertyValue ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:valueConstraints a rdf:Property ;
+  rdfs:label "valueConstraints" ;
+  rdfs:comment "The values a field may take or the range it must fall in, in words. Distinct from fair2-governance's use constraints on a dataset." ;
+  schema:domainIncludes cr:Field ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:unitSingular a rdf:Property ;
+  rdfs:label "unitSingular" ;
+  rdfs:comment "What one record of the record set is, in the singular (e.g. cell, patient)." ;
+  schema:domainIncludes cr:RecordSet ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:unitPlural a rdf:Property ;
+  rdfs:label "unitPlural" ;
+  rdfs:comment "The plural of fair2:unitSingular (e.g. cells, patients)." ;
+  schema:domainIncludes cr:RecordSet ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:unitLabelSource a rdf:Property ;
+  rdfs:label "unitLabelSource" ;
+  rdfs:comment "Where the record-unit labels came from: a curated catalog or the producing agent." ;
+  schema:domainIncludes cr:RecordSet ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:primaryMeasure a rdf:Property ;
+  rdfs:label "primaryMeasure" ;
+  rdfs:comment "The field an overview of the record set should lead with." ;
+  schema:domainIncludes cr:RecordSet ;
+  schema:rangeIncludes cr:Field ;
+  vs:term_status "testing" .
+
+fair2:encrypted a rdf:Property ;
+  rdfs:label "encrypted" ;
+  rdfs:comment "Whether the file's content is encrypted, so that it cannot be read without a key." ;
+  schema:domainIncludes cr:FileObject, cr:FileSet ;
+  schema:rangeIncludes xsd:boolean ;
+  vs:term_status "testing" .
+
+fair2:rowCount a rdf:Property ;
+  rdfs:label "rowCount" ;
+  rdfs:comment "The number of rows in a table." ;
+  schema:domainIncludes cr:RecordSet, cr:FileObject, prov:Derivation ;
+  schema:rangeIncludes xsd:nonNegativeInteger ;
+  vs:term_status "testing" .
+
+fair2:contextLoad a rdf:Property ;
+  rdfs:label "contextLoad" ;
+  rdfs:comment "Whether a documentation file was preserved in the package, and how." ;
+  schema:domainIncludes cr:FileObject ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:renameRule a rdf:Property ;
+  rdfs:label "renameRule" ;
+  rdfs:comment "The rule by which a set of files was renamed when packaged, as a JSON object." ;
+  schema:domainIncludes prov:Entity, cr:FileSet ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:retrievedOn a rdf:Property ;
+  rdfs:label "retrievedOn" ;
+  rdfs:comment "When a source was retrieved." ;
+  schema:domainIncludes prov:Entity ;
+  schema:rangeIncludes xsd:dateTime ;
+  vs:term_status "testing" .
+
+fair2:retrievalMethod a rdf:Property ;
+  rdfs:label "retrievalMethod" ;
+  rdfs:comment "How a source was obtained (e.g. provided locally, from a cache, fetched, from Crossref)." ;
+  schema:domainIncludes prov:Entity ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:declaredLicenses a rdf:Property ;
+  rdfs:label "declaredLicenses" ;
+  rdfs:comment "Every licence a source declared, when it declared more than one; schema:license carries the one applied." ;
+  schema:domainIncludes schema:Dataset, prov:Entity ;
+  schema:rangeIncludes schema:CreativeWork, schema:URL ;
+  vs:term_status "testing" .
+
+fair2:resolvedBy a rdf:Property ;
+  rdfs:label "resolvedBy" ;
+  rdfs:comment "How a dataset's main entity was resolved." ;
+  schema:domainIncludes cr:RecordSet ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:easting a rdf:Property ;
+  rdfs:label "easting" ;
+  rdfs:comment "A projected easting coordinate, in the units of the coordinate reference system. Named by a field's cr:equivalentProperty, as schema:longitude is for geographic coordinates." ;
+  vs:term_status "testing" .
+
+fair2:northing a rdf:Property ;
+  rdfs:label "northing" ;
+  rdfs:comment "A projected northing coordinate, in the units of the coordinate reference system. Named by a field's cr:equivalentProperty, as schema:latitude is for geographic coordinates." ;
+  vs:term_status "testing" .
+
+fair2:InferredJoin a rdfs:Class ;
+  rdfs:label "InferredJoin" ;
+  rdfs:comment "A join between record sets found by inference and not verified. Unlike cr:references, which declares a verified foreign key, it records the evidence and how far it holds. One or more fields on each side." ;
+  rdfs:subClassOf prov:Entity ;
+  vs:term_status "testing" .
+
+fair2:fromField a rdf:Property ;
+  rdfs:label "fromField" ;
+  rdfs:comment "The field or fields an inferred join starts from." ;
+  schema:domainIncludes fair2:InferredJoin ;
+  schema:rangeIncludes cr:Field ;
+  vs:term_status "testing" .
+
+fair2:toField a rdf:Property ;
+  rdfs:label "toField" ;
+  rdfs:comment "The field or fields an inferred join ends at." ;
+  schema:domainIncludes fair2:InferredJoin ;
+  schema:rangeIncludes cr:Field ;
+  vs:term_status "testing" .
+
+fair2:cardinality a rdf:Property ;
+  rdfs:label "cardinality" ;
+  rdfs:comment "The cardinality of an inferred join: one-to-one, one-to-many, many-to-one or many-to-many." ;
+  schema:domainIncludes fair2:InferredJoin ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:confidence a rdf:Property ;
+  rdfs:label "confidence" ;
+  rdfs:comment "How confident the inference is: high, medium or low." ;
+  schema:domainIncludes fair2:InferredJoin ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:matchedCount a rdf:Property ;
+  rdfs:label "matchedCount" ;
+  rdfs:comment "How many distinct values, or value tuples, of the starting side are found on the other side." ;
+  schema:domainIncludes fair2:InferredJoin ;
+  schema:rangeIncludes xsd:nonNegativeInteger ;
+  vs:term_status "testing" .
+
+fair2:sourceDistinct a rdf:Property ;
+  rdfs:label "sourceDistinct" ;
+  rdfs:comment "Distinct values, or value tuples, on the side an inferred join starts from." ;
+  schema:domainIncludes fair2:InferredJoin ;
+  schema:rangeIncludes xsd:nonNegativeInteger ;
+  vs:term_status "testing" .
+
+fair2:targetDistinct a rdf:Property ;
+  rdfs:label "targetDistinct" ;
+  rdfs:comment "Distinct values, or value tuples, on the side an inferred join ends at." ;
+  schema:domainIncludes fair2:InferredJoin ;
+  schema:rangeIncludes xsd:nonNegativeInteger ;
+  vs:term_status "testing" .
+
+fair2:matchRate a rdf:Property ;
+  rdfs:label "matchRate" ;
+  rdfs:comment "The share of the starting side's distinct values found on the other side, from 0 to 1." ;
+  schema:domainIncludes fair2:InferredJoin ;
+  schema:rangeIncludes xsd:decimal ;
+  vs:term_status "testing" .
+
+fair2:uniqueness a rdf:Property ;
+  rdfs:label "uniqueness" ;
+  rdfs:comment "How unique the joined key is on the side it ends at, from 0 to 1." ;
+  schema:domainIncludes fair2:InferredJoin ;
+  schema:rangeIncludes xsd:decimal ;
+  vs:term_status "testing" .
+
+fair2:PrivacyScreening a rdfs:Class ;
+  rdfs:label "PrivacyScreening" ;
+  rdfs:comment "An assessment of whether, and how, a dataset can be published without disclosing personal information." ;
+  rdfs:subClassOf prov:Activity ;
+  vs:term_status "testing" .
+
+fair2:subjectType a rdf:Property ;
+  rdfs:label "subjectType" ;
+  rdfs:comment "Who or what the data is about, as assessed by a privacy screening (e.g. human participants)." ;
+  schema:domainIncludes fair2:PrivacyScreening ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:decision a rdf:Property ;
+  rdfs:label "decision" ;
+  rdfs:comment "The outcome of a privacy screening." ;
+  schema:domainIncludes fair2:PrivacyScreening ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:action a rdf:Property ;
+  rdfs:label "action" ;
+  rdfs:comment "The change a privacy screening requires of a field (e.g. drop, generalise, hash), on the oa:Annotation, motivated by oa:editing, that targets it." ;
+  schema:domainIncludes oa:Annotation ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:userOverride a rdf:Property ;
+  rdfs:label "userOverride" ;
+  rdfs:comment "Whether the person running the screening overrode its decision." ;
+  schema:domainIncludes fair2:PrivacyScreening ;
+  schema:rangeIncludes xsd:boolean ;
+  vs:term_status "testing" .
+
+fair2:narrativeWithheld a rdf:Property ;
+  rdfs:label "narrativeWithheld" ;
+  rdfs:comment "Whether narrative detail of the screening was withheld from the public record." ;
+  schema:domainIncludes fair2:PrivacyScreening ;
+  schema:rangeIncludes xsd:boolean ;
+  vs:term_status "testing" .
+
+fair2:IntegrityAssessment a rdfs:Class ;
+  rdfs:label "IntegrityAssessment" ;
+  rdfs:comment "An assessment of a dataset's internal consistency and completeness. The issues it finds are oa:Annotations motivated by oa:assessing." ;
+  rdfs:subClassOf prov:Activity ;
+  vs:term_status "testing" .
+
+fair2:overallScore a rdf:Property ;
+  rdfs:label "overallScore" ;
+  rdfs:comment "A single score summarising an integrity assessment." ;
+  schema:domainIncludes fair2:IntegrityAssessment ;
+  schema:rangeIncludes xsd:decimal ;
+  vs:term_status "testing" .
+
+fair2:checks a rdf:Property ;
+  rdfs:label "checks" ;
+  rdfs:comment "The individual checks of an integrity assessment and their results, as a JSON object." ;
+  schema:domainIncludes fair2:IntegrityAssessment ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:severity a rdf:Property ;
+  rdfs:label "severity" ;
+  rdfs:comment "How severe an issue is, on the oa:Annotation that records it." ;
+  schema:domainIncludes oa:Annotation ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:complianceStatus a rdf:Property ;
+  rdfs:label "complianceStatus" ;
+  rdfs:comment "How far a standard applied to the dataset was complied with." ;
+  schema:domainIncludes prov:Activity ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
+
+fair2:matchSource a rdf:Property ;
+  rdfs:label "matchSource" ;
+  rdfs:comment "Where a match to an ontology concept came from." ;
+  schema:rangeIncludes xsd:string ;
+  vs:term_status "testing" .
