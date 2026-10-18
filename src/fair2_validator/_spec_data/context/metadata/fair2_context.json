@@ -809,6 +809,84 @@
       },
       "matchSource": {
         "@id": "fair2:matchSource"
+      },
+      "arrayShape": {
+        "@id": "cr:arrayShape"
+      },
+      "data": {
+        "@id": "cr:data",
+        "@type": "@json"
+      },
+      "equivalentProperty": {
+        "@id": "cr:equivalentProperty"
+      },
+      "examples": {
+        "@id": "cr:examples",
+        "@type": "@json"
+      },
+      "fileProperty": {
+        "@id": "cr:fileProperty"
+      },
+      "fileSet": {
+        "@id": "cr:fileSet"
+      },
+      "format": {
+        "@id": "cr:format"
+      },
+      "isArray": {
+        "@id": "cr:isArray"
+      },
+      "isLiveDataset": {
+        "@id": "cr:isLiveDataset"
+      },
+      "jsonPath": {
+        "@id": "cr:jsonPath"
+      },
+      "key": {
+        "@id": "cr:key"
+      },
+      "md5": {
+        "@id": "cr:md5"
+      },
+      "parentField": {
+        "@id": "cr:parentField"
+      },
+      "path": {
+        "@id": "cr:path"
+      },
+      "readLines": {
+        "@id": "cr:readLines"
+      },
+      "references": {
+        "@id": "cr:references"
+      },
+      "regex": {
+        "@id": "cr:regex"
+      },
+      "repeated": {
+        "@id": "cr:repeated"
+      },
+      "replace": {
+        "@id": "cr:replace"
+      },
+      "samplingRate": {
+        "@id": "cr:samplingRate"
+      },
+      "sc": "https://schema.org/",
+      "sdVersion": {
+        "@id": "cr:sdVersion"
+      },
+      "separator": {
+        "@id": "cr:separator"
+      },
+      "subField": {
+        "@id": "cr:subField"
+      },
+      "transform": {
+        "@id": "cr:transform"
+      },
+      "unArchive": {
+        "@id": "cr:unArchive"
       }
     }
   ]

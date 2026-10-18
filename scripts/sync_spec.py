@@ -75,6 +75,15 @@ def main() -> int:
     version = _spec_version()
     (DEST / "VERSION").write_text(version + "\n")
 
+    # The frozen context of the pinned release - what a document embeds - so a
+    # producer can emit exactly the context of the spec it is validated against.
+    frozen = SPEC / "context" / f"{version}.jsonld"
+    if frozen.is_file():
+        dst = DEST / "context" / frozen.name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(frozen, dst)
+        copied += 1
+
     print(f"Vendored {copied} spec file(s) at {version} -> {DEST.relative_to(REPO)}")
     return 0
 

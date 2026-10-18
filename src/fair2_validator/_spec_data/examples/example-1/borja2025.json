@@ -807,6 +807,84 @@
     },
     "matchSource": {
       "@id": "fair2:matchSource"
+    },
+    "data": {
+      "@id": "cr:data",
+      "@type": "@json"
+    },
+    "examples": {
+      "@id": "cr:examples",
+      "@type": "@json"
+    },
+    "fileProperty": {
+      "@id": "cr:fileProperty"
+    },
+    "fileSet": {
+      "@id": "cr:fileSet"
+    },
+    "format": {
+      "@id": "cr:format"
+    },
+    "isLiveDataset": {
+      "@id": "cr:isLiveDataset"
+    },
+    "jsonPath": {
+      "@id": "cr:jsonPath"
+    },
+    "key": {
+      "@id": "cr:key"
+    },
+    "md5": {
+      "@id": "cr:md5"
+    },
+    "parentField": {
+      "@id": "cr:parentField"
+    },
+    "path": {
+      "@id": "cr:path"
+    },
+    "references": {
+      "@id": "cr:references"
+    },
+    "regex": {
+      "@id": "cr:regex"
+    },
+    "repeated": {
+      "@id": "cr:repeated"
+    },
+    "replace": {
+      "@id": "cr:replace"
+    },
+    "sc": "https://schema.org/",
+    "samplingRate": {
+      "@id": "cr:samplingRate"
+    },
+    "separator": {
+      "@id": "cr:separator"
+    },
+    "subField": {
+      "@id": "cr:subField"
+    },
+    "transform": {
+      "@id": "cr:transform"
+    },
+    "equivalentProperty": {
+      "@id": "cr:equivalentProperty"
+    },
+    "readLines": {
+      "@id": "cr:readLines"
+    },
+    "sdVersion": {
+      "@id": "cr:sdVersion"
+    },
+    "unArchive": {
+      "@id": "cr:unArchive"
+    },
+    "arrayShape": {
+      "@id": "cr:arrayShape"
+    },
+    "isArray": {
+      "@id": "cr:isArray"
     }
   },
   "@id": "https://doi.org/10.71728/r1rj-f947",
@@ -1562,7 +1640,7 @@
   "citationKey": "Borja2024a",
   "conformsTo": [
     "http://mlcommons.org/croissant/1.0",
-    "https://fair2.ai/spec/v1.6.0"
+    "https://fair2.ai/spec/v1.6.1"
   ],
   "contentUrl": "fair2.json",
   "dateCreated": "2025-02-05",

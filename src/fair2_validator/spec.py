@@ -33,6 +33,15 @@ class Spec:
         return self.root / "context" / "metadata" / "fair2_context.json"
 
     @property
+    def published_context(self) -> Path:
+        """The frozen JSON-LD context of this spec version (`context/vX.Y.Z.jsonld`).
+
+        The context a FAIR2 document embeds or references. Every spec release
+        cuts one, so it exists for any tagged version; a producer that emits it
+        emits exactly the vocabulary this validator checks against."""
+        return self.root / "context" / f"{self.version}.jsonld"
+
+    @property
     def example_file(self) -> Path:
         return self.root / "examples" / "example-1" / "borja2025.json"
 
@@ -54,8 +63,17 @@ class Spec:
         `<tag>-N-g<sha>` describe string. Releases are tag-only, so a pinned
         spec that isn't exactly on a tag is reported as `untagged@<sha>`.
 
-        A vendored copy (inside the wheel) has no `.git`; its version is read
-        from the `VERSION` file written at sync time."""
+        A vendored copy states its version in the `VERSION` file written at
+        sync time, and that is read first: the copy inside this repository sits
+        in the validator's own git checkout, where `git describe` answers with
+        the validator's tag, not the spec's. A fair2-spec checkout has no
+        `VERSION` file and is described by git."""
+        vfile = self.root / "VERSION"                        # vendored copy
+        if vfile.is_file():
+            v = vfile.read_text().strip()
+            if v:
+                return v
+
         def _git(*args: str) -> str:
             try:
                 out = subprocess.run(["git", "-C", str(self.root), *args],
@@ -69,11 +87,6 @@ class Spec:
         pointed = _git("tag", "--points-at", "HEAD")         # tag(s) at this commit
         if pointed:
             return pointed.splitlines()[0]
-        vfile = self.root / "VERSION"                        # vendored copy
-        if vfile.is_file():
-            v = vfile.read_text().strip()
-            if v:
-                return v
         sha = _git("rev-parse", "--short", "HEAD")
         return f"untagged@{sha}" if sha else "unknown"
 

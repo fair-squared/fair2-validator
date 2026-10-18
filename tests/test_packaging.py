@@ -61,3 +61,12 @@ def test_version_matches_pyproject():
     pyproject = (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text()
     declared = re.search(r'^version = "([^"]+)"', pyproject, re.M).group(1)
     assert fair2_validator.__version__ == declared
+
+
+def test_bundled_spec_ships_its_published_context():
+    """The frozen context of the pinned release ships, so producers can embed it."""
+    import json
+    spec = find_spec(Path(__file__).resolve().parents[1] / "src" / "fair2_validator" / "_spec_data")
+    ctx = json.loads(spec.published_context.read_text())["@context"]
+    assert spec.published_context.name == f"{spec.version}.jsonld"
+    assert ctx["fair2"] == "https://fair2.ai/ns/"
