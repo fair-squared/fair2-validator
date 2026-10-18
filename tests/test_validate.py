@@ -256,3 +256,26 @@ def test_peer_artifact_coercion_is_not_flagged(golden):
     ctx = _inline_context(json.loads(golden.read_text()))
     assert ctx["dataArticle"].get("@type") == "@id"   # the spec relies on it
     assert not [f for f in static_rules(golden) if "dataArticle" in f.message]
+
+
+@pytest.mark.parametrize("fileset,expected", [
+    ({"name": "images", "encodingFormat": "image/png", "includes": "assets/images/**"}, None),
+    ({"name": "images", "encodingFormat": "image/png"}, "includes"),
+])
+def test_filesets_are_checked_under_distribution(spec, golden, tmp_path, fileset, expected):
+    """Spec v1.5.4: a cr:FileSet has its own shape; before, nothing checked it."""
+    variant = _golden_variant(golden, tmp_path, lambda d: d["distribution"].append(
+        {"@type": "FileSet", "@id": "assets/images", **fileset}))
+    rep = validate(variant, spec, ["distribution"])
+    hits = [f for f in rep.findings if f.severity == "violation"]
+    if expected is None:
+        assert rep.shacl_conforms is True, [f.message for f in hits]
+    else:
+        assert any(f.locus.endswith(f"→ {expected}") for f in hits), [f.message for f in hits]
+
+
+def test_untyped_distribution_is_a_violation(spec, golden, tmp_path):
+    variant = _golden_variant(golden, tmp_path, lambda d: d["distribution"].append(
+        {"@id": "mystery.bin", "name": "mystery"}))
+    rep = validate(variant, spec)
+    assert any("cr:FileObject or a cr:FileSet" in f.message for f in rep.findings)

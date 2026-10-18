@@ -91,6 +91,18 @@
       "FileObject": {
         "@id": "cr:FileObject"
       },
+      "FileSet": {
+        "@id": "cr:FileSet"
+      },
+      "includes": {
+        "@id": "cr:includes"
+      },
+      "excludes": {
+        "@id": "cr:excludes"
+      },
+      "containedIn": {
+        "@id": "cr:containedIn"
+      },
       "Float": {
         "@id": "schema:Float"
       },

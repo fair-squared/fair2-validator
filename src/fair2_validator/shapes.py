@@ -33,7 +33,7 @@ def expand(curie: str) -> str:
 #                       node(s) reached via dataset_property.
 SHAPE_MAP: dict[str, dict] = {
     "dataset":         dict(files=["dataset.ttl"],      shape="fair2s:DatasetShape",          target="schema:Dataset",          prop=None),
-    "distribution":    dict(files=["distribution.ttl"], shape="schema:DistributionShape",     target="cr:FileObject",           prop="schema:distribution"),
+    "distribution":    dict(files=["distribution.ttl"], shape="fair2s:DistributionShape",     target="cr:FileObject",           prop="schema:distribution"),
     "recordSet":       dict(files=["recordset.ttl"],    shape="fair2s:RecordSetShape",        target="cr:RecordSet",            prop="cr:recordSet"),
     "field":           dict(files=["recordset.ttl"],    shape="fair2s:FieldShape",            target="cr:Field",                prop=None),
     "methodSection":   dict(files=["method.ttl"],       shape="fair2s:MethodSectionShape",    target="fair2:Section",           prop="fair2:methodSection"),

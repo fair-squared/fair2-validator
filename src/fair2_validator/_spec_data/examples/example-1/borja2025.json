@@ -671,7 +671,19 @@
       "@id": "fair2:certifiedDocument",
       "@type": "@id"
     },
-    "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/"
+    "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/",
+    "FileSet": {
+      "@id": "cr:FileSet"
+    },
+    "includes": {
+      "@id": "cr:includes"
+    },
+    "excludes": {
+      "@id": "cr:excludes"
+    },
+    "containedIn": {
+      "@id": "cr:containedIn"
+    }
   },
   "@id": "https://doi.org/10.71728/r1rj-f947",
   "@type": "Dataset",
@@ -1426,7 +1438,7 @@
   "citationKey": "Borja2024a",
   "conformsTo": [
     "http://mlcommons.org/croissant/1.0",
-    "https://fair2.ai/spec/v1.5.3"
+    "https://fair2.ai/spec/v1.5.4"
   ],
   "contentUrl": "fair2.json",
   "dateCreated": "2025-02-05",

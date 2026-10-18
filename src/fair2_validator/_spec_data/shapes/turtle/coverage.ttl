@@ -13,7 +13,7 @@ fair2s:SpatialCoverageShape
         sh:path schema:geo ;
         sh:or (
             [ sh:node fair2s:GeoShapeShape ]
-            [ sh:node schema:GeoCoordinatesShape ]
+            [ sh:node fair2s:GeoCoordinatesShape ]
         ) ;
     ] ;
     sh:property [
@@ -35,7 +35,7 @@ fair2s:GeoShapeShape
     ) ;
     sh:message "A GeoShape must declare at least one geometry (box, polygon, line, or circle)." .
 
-schema:GeoCoordinatesShape
+fair2s:GeoCoordinatesShape
     a sh:NodeShape ;
     sh:property [
         sh:path schema:latitude ;

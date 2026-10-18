@@ -93,10 +93,16 @@ fair2s:DatasetShape
         sh:path schema:spatialCoverage ;
         sh:node fair2s:SpatialCoverageShape
     ] ;
+    # Each distribution is a single file or a set of files; the class-targeted
+    # DistributionShape and FileSetShape then check each by its kind.
     sh:property [
         sh:path schema:distribution ;
         sh:minCount 1 ;
-        sh:node fair2s:DistributionShape
+        sh:or (
+            [ sh:class cr:FileObject ]
+            [ sh:class cr:FileSet ]
+        ) ;
+        sh:message "Each distribution must be a cr:FileObject or a cr:FileSet."
     ] ;
 
     sh:property [ sh:path schema:dateCreated ; sh:datatype xsd:date ] ;

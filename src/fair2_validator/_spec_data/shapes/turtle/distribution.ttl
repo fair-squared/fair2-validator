@@ -4,7 +4,11 @@
 @prefix cr: <http://mlcommons.org/croissant/> .
 @prefix fair2s: <https://fair2.ai/shapes/> .
 
-schema:DistributionShape
+# One downloadable file. Shape IRIs live in fair2s:; until v1.5.4 this one was
+# minted as schema:DistributionShape while dataset.ttl referenced
+# fair2s:DistributionShape, a shape that did not exist, so the reference
+# checked nothing.
+fair2s:DistributionShape
     a sh:NodeShape ;
     sh:targetClass cr:FileObject ;
     sh:nodeKind sh:IRI ;
@@ -33,4 +37,39 @@ schema:DistributionShape
         sh:path schema:sha256 ;
         sh:node fair2s:TextShape ;
         sh:minCount 1 ;
+    ] .
+
+# A collection of homogeneous files, selected by glob (Croissant FileSet). It has
+# no single size or checksum, so DistributionShape's file requirements cannot
+# apply; Croissant gives it inclusion patterns and an optional container
+# instead. containedIn is optional: without it the patterns select files
+# shipped in the package itself.
+fair2s:FileSetShape
+    a sh:NodeShape ;
+    sh:targetClass cr:FileSet ;
+    sh:nodeKind sh:IRI ;
+    sh:property [
+        sh:path schema:name ;
+        sh:node fair2s:TextShape ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:encodingFormat ;
+        sh:node fair2s:TextShape ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        sh:path cr:includes ;
+        sh:minCount 1 ;
+        sh:node fair2s:TextShape ;
+        sh:description "A glob pattern selecting the files to include." ;
+    ] ;
+    sh:property [
+        sh:path cr:excludes ;
+        sh:node fair2s:TextShape ;
+    ] ;
+    sh:property [
+        sh:path cr:containedIn ;
+        sh:nodeKind sh:IRI ;
+        sh:description "The archive or manifest the files come from, by its @id." ;
     ] .
