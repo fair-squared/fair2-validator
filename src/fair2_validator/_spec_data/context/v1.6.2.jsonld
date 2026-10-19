@@ -886,5 +886,5 @@
       "@id": "cr:unArchive"
     }
   },
-  "_comment": "FAIR2 v1.6.1 JSON-LD context. Immutable: published once and never changed. Generated from context/metadata/fair2_context.json by tools/build_context.py - do not edit by hand."
+  "_comment": "FAIR2 v1.6.2 JSON-LD context. Immutable: published once and never changed. Generated from context/metadata/fair2_context.json by tools/build_context.py - do not edit by hand."
 }

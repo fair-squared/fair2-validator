@@ -1640,7 +1640,7 @@
   "citationKey": "Borja2024a",
   "conformsTo": [
     "http://mlcommons.org/croissant/1.0",
-    "https://fair2.ai/spec/v1.6.1"
+    "https://fair2.ai/spec/v1.6.2"
   ],
   "contentUrl": "fair2.json",
   "dateCreated": "2025-02-05",

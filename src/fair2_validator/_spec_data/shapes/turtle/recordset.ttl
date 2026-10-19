@@ -81,15 +81,29 @@ fair2s:FieldShape
         sh:description "The mapping to the physical file and column."
     ] .
 
+# Croissant takes a field's values from a FileObject or from a FileSet - a
+# sharded table, or a column of paths to shipped files. Until v1.6.2 only
+# cr:fileObject was accepted, so every field sourced from a FileSet failed.
 fair2s:SourceShape
     a sh:NodeShape ;
     sh:nodeKind sh:BlankNodeOrIRI ;
 
+    sh:or (
+        [ sh:property [ sh:path cr:fileObject ; sh:minCount 1 ; sh:nodeKind sh:IRI ] ]
+        [ sh:property [ sh:path cr:fileSet ; sh:minCount 1 ; sh:nodeKind sh:IRI ] ]
+    ) ;
+    sh:message "A field's source must name the FileObject or FileSet its values come from." ;
+
     sh:property [
         sh:path cr:fileObject ;
-        sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
         sh:description "The @id of the FileObject this field is extracted from."
+    ] ;
+
+    sh:property [
+        sh:path cr:fileSet ;
+        sh:nodeKind sh:IRI ;
+        sh:description "The @id of the FileSet this field is extracted from."
     ] ;
 
     sh:property [
