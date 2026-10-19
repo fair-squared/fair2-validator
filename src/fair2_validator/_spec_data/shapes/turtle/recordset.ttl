@@ -114,6 +114,27 @@ fair2s:SourceShape
         sh:description "The physical column name in the source file."
     ] .
 
+# A verified multi-column foreign key, when the target's cr:key is already
+# another set of fields (otherwise it is written the Croissant way: a
+# cr:references per field into the target's key). One field per key column on
+# each side.
+fair2s:CompositeKeyShape
+    a sh:NodeShape ;
+    sh:targetClass fair2:CompositeKey ;
+    sh:nodeKind sh:IRI ;
+    sh:property [
+        sh:path fair2:fromField ;
+        sh:minCount 2 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "A composite key names at least two source fields."
+    ] ;
+    sh:property [
+        sh:path fair2:toField ;
+        sh:minCount 2 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "A composite key names at least two target fields."
+    ] .
+
 fair2s:AnnotationShape
     a sh:NodeShape ;
     sh:targetObjectsOf cr:annotation ;

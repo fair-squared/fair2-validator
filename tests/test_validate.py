@@ -279,3 +279,19 @@ def test_untyped_distribution_is_a_violation(spec, golden, tmp_path):
         {"@id": "mystery.bin", "name": "mystery"}))
     rep = validate(variant, spec)
     assert any("cr:FileObject or a cr:FileSet" in f.message for f in rep.findings)
+
+
+def test_a_graph_beside_the_dataset_is_reported_not_skipped(spec, golden, tmp_path):
+    """JSON-LD reads a top-level @graph next to the Dataset's own properties as
+    a named graph, which the default-graph RDF validated here leaves out.  Its
+    nodes went unchecked in silence; the document now fails, saying why."""
+    doc = json.loads(golden.read_text())
+    doc["@graph"] = doc.pop("included")
+    moved = tmp_path / "graph.json"
+    moved.write_text(json.dumps(doc))
+    for schemas in (None, ["provenance"]):
+        rep = validate(moved, spec, schemas)
+        assert rep.shacl_conforms is False
+        assert any("separate named graph" in f.message and f.severity == "violation"
+                   for f in rep.findings)
+    assert validate(golden, spec).shacl_conforms is True

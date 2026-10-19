@@ -561,17 +561,22 @@ fair2:InferredJoin a rdfs:Class ;
   rdfs:subClassOf prov:Entity ;
   vs:term_status "testing" .
 
+fair2:CompositeKey a rdfs:Class ;
+  rdfs:label "CompositeKey" ;
+  rdfs:comment "A verified foreign key over several fields, for when Croissant cannot state it. Croissant writes one as a cr:references on each source field into the target record set's cr:key; a record set has one key, so when the target's key is another set of fields the composite is stated with this instead. Its tuple is unique on the target, and the source's tuples fall inside it." ;
+  vs:term_status "testing" .
+
 fair2:fromField a rdf:Property ;
   rdfs:label "fromField" ;
-  rdfs:comment "The field or fields an inferred join starts from." ;
-  schema:domainIncludes fair2:InferredJoin ;
+  rdfs:comment "The field or fields an inferred join or composite key starts from." ;
+  schema:domainIncludes fair2:InferredJoin, fair2:CompositeKey ;
   schema:rangeIncludes cr:Field ;
   vs:term_status "testing" .
 
 fair2:toField a rdf:Property ;
   rdfs:label "toField" ;
-  rdfs:comment "The field or fields an inferred join ends at." ;
-  schema:domainIncludes fair2:InferredJoin ;
+  rdfs:comment "The field or fields an inferred join or composite key ends at." ;
+  schema:domainIncludes fair2:InferredJoin, fair2:CompositeKey ;
   schema:rangeIncludes cr:Field ;
   vs:term_status "testing" .
 
@@ -592,28 +597,28 @@ fair2:confidence a rdf:Property ;
 fair2:matchedCount a rdf:Property ;
   rdfs:label "matchedCount" ;
   rdfs:comment "How many distinct values, or value tuples, of the starting side are found on the other side." ;
-  schema:domainIncludes fair2:InferredJoin ;
+  schema:domainIncludes fair2:InferredJoin, fair2:CompositeKey ;
   schema:rangeIncludes xsd:nonNegativeInteger ;
   vs:term_status "testing" .
 
 fair2:sourceDistinct a rdf:Property ;
   rdfs:label "sourceDistinct" ;
   rdfs:comment "Distinct values, or value tuples, on the side an inferred join starts from." ;
-  schema:domainIncludes fair2:InferredJoin ;
+  schema:domainIncludes fair2:InferredJoin, fair2:CompositeKey ;
   schema:rangeIncludes xsd:nonNegativeInteger ;
   vs:term_status "testing" .
 
 fair2:targetDistinct a rdf:Property ;
   rdfs:label "targetDistinct" ;
   rdfs:comment "Distinct values, or value tuples, on the side an inferred join ends at." ;
-  schema:domainIncludes fair2:InferredJoin ;
+  schema:domainIncludes fair2:InferredJoin, fair2:CompositeKey ;
   schema:rangeIncludes xsd:nonNegativeInteger ;
   vs:term_status "testing" .
 
 fair2:matchRate a rdf:Property ;
   rdfs:label "matchRate" ;
   rdfs:comment "The share of the starting side's distinct values found on the other side, from 0 to 1." ;
-  schema:domainIncludes fair2:InferredJoin ;
+  schema:domainIncludes fair2:InferredJoin, fair2:CompositeKey ;
   schema:rangeIncludes xsd:decimal ;
   vs:term_status "testing" .
 

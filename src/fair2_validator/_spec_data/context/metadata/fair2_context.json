@@ -746,6 +746,9 @@
       "InferredJoin": {
         "@id": "fair2:InferredJoin"
       },
+      "CompositeKey": {
+        "@id": "fair2:CompositeKey"
+      },
       "fromField": {
         "@id": "fair2:fromField"
       },

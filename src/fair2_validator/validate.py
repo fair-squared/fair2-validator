@@ -1,6 +1,8 @@
 """Deterministic SHACL validation: full document or individual sub-schemas."""
 from __future__ import annotations
 
+import json
+
 from pathlib import Path
 import rdflib
 from pyshacl import validate as pyshacl_validate
@@ -151,11 +153,35 @@ def _ontology_graph(spec: Spec) -> rdflib.Graph | None:
     return g
 
 
+def _check_graph_beside_dataset(target: Path, rep: Report) -> bool:
+    """A top-level ``@graph`` next to the Dataset's own properties is a named
+    graph in JSON-LD, so the RDF validated here (the default graph) leaves out
+    every node in it - silently, unless reported.  Since spec v1.4 shared nodes
+    go under ``included``."""
+    try:
+        doc = json.loads(Path(target).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if not isinstance(doc, dict) or not isinstance(doc.get("@graph"), list):
+        return False
+    if not set(doc) - {"@context", "@graph"}:
+        return False  # a document that is only a graph: its nodes are the default graph
+    rep.add(Finding(
+        "shacl", "violation",
+        f"@graph beside the Dataset's own properties is a separate named graph: its "
+        f"{len(doc['@graph'])} node(s) were not validated",
+        locus="@graph", json_path='$["@graph"]', rule="fair2json-format: included",
+        suggestion="hold shared nodes under `included` (JSON-LD @included), as the spec "
+                   "has since v1.4.0"))
+    return True
+
+
 def validate(target: Path, spec: Spec, schemas: list[str] | None = None) -> Report:
     target = Path(target)
     scope = "full" if not schemas or schemas == ["dataset"] else ",".join(schemas)
     rep = Report(target=str(target), spec_version=spec.version, scope=scope)
     data = _load_data(target)
+    graph_unchecked = _check_graph_beside_dataset(target, rep)
     index = NodeIndex(target, default_base=_document_base(target))
     ont = _ontology_graph(spec)
     if ont is None:
@@ -174,11 +200,11 @@ def validate(target: Path, spec: Spec, schemas: list[str] | None = None) -> Repo
         conforms, rg, _ = pyshacl_validate(data, shacl_graph=shapes_g, ont_graph=ont,
                                            advanced=True, inplace=False,
                                            allow_warnings=True)
-        rep.shacl_conforms = bool(conforms)
+        rep.shacl_conforms = bool(conforms) and not graph_unchecked
         rep.findings.extend(_findings_from_report(rg, "shacl", index, data))
         return rep
 
-    rep.shacl_conforms = True
+    rep.shacl_conforms = not graph_unchecked
     # Overlapping sub-schemas (recordSet's closure includes field) would report
     # a shared problem once per sub-schema; the first to find it reports it.
     reported: set[tuple] = set()
