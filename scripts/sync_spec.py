@@ -26,6 +26,7 @@ FILES = [
     "context/metadata/fair2_context.json",
     "context/validation/shacl_context.json",
     "examples/example-1/borja2025.json",
+    "schemas/fair2-governance.schema.json",
     # Loaded with the shapes: SHACL class targeting follows rdfs:subClassOf,
     # and omitting it silently under-validates rather than erroring.
     "ontologies/fair2_ontology.ttl",

@@ -14,6 +14,7 @@
 @prefix ddi-stats: <http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/> .
 @prefix sec: <https://w3id.org/security#> .
 @prefix oa: <http://www.w3.org/ns/oa#> .
+@prefix dct: <http://purl.org/dc/terms/> .
 
 # FAIR2 Ontology — 2026-03-30T12:00:00.000000Z
 # Includes only terms used in published datasets.
@@ -456,7 +457,7 @@ fair2:roleSource a rdf:Property ;
 
 fair2:valueConstraints a rdf:Property ;
   rdfs:label "valueConstraints" ;
-  rdfs:comment "The values a field may take or the range it must fall in, in words. Distinct from fair2-governance's use constraints on a dataset." ;
+  rdfs:comment "The values a field may take or the range it must fall in, in words. Distinct from fair2:constraints, a dataset's use constraints." ;
   schema:domainIncludes cr:Field ;
   schema:rangeIncludes xsd:string ;
   vs:term_status "testing" .
@@ -709,3 +710,188 @@ fair2:matchSource a rdf:Property ;
   rdfs:comment "Where a match to an ontology concept came from." ;
   schema:rangeIncludes xsd:string ;
   vs:term_status "testing" .
+
+# ── Governance (v1.7.0) ─────────────────────────────────────────────────
+# Each block is a JSON value (rdf:JSON): its contents are defined by
+# schemas/fair2-governance.schema.json, not by vocabulary terms. See
+# docs/specification/governance.md.
+
+fair2:access a rdf:Property ;
+  rdfs:label "access" ;
+  rdfs:comment "The dataset's access tier and the conditions on access (the +G, +S, +C, +P, +J and +Q modifiers), as a JSON object. When absent, or without a tier, the dataset is L0 (open)." ;
+  schema:domainIncludes schema:Dataset ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:constraints a rdf:Property ;
+  rdfs:label "constraints" ;
+  rdfs:comment "Use constraints on the dataset - AI training, export, commercial use and combination with other datasets - as a JSON object." ;
+  schema:domainIncludes schema:Dataset ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:embargo a rdf:Property ;
+  rdfs:label "embargo" ;
+  rdfs:comment "A date before which governed (L1 and above) data is not released, and who is exempt, as a JSON object." ;
+  schema:domainIncludes schema:Dataset ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:variableGovernance a rdf:Property ;
+  rdfs:label "variableGovernance" ;
+  rdfs:comment "Access tiers and rules for individual columns, files, asset classes and record partitions, as a JSON object." ;
+  schema:domainIncludes schema:Dataset ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:temporalGovernance a rdf:Property ;
+  rdfs:label "temporalGovernance" ;
+  rdfs:comment "Phases in which the access tier or environment changes over time, as a JSON object." ;
+  schema:domainIncludes schema:Dataset ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:agentGovernance a rdf:Property ;
+  rdfs:label "agentGovernance" ;
+  rdfs:comment "Whether and how AI agents acting for a person may use the dataset, as a JSON object." ;
+  schema:domainIncludes schema:Dataset ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:consentGovernance a rdf:Property ;
+  rdfs:label "consentGovernance" ;
+  rdfs:comment "How participants' consent withdrawals affect access, as a JSON object." ;
+  schema:domainIncludes schema:Dataset ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:indigenousGovernance a rdf:Property ;
+  rdfs:label "indigenousGovernance" ;
+  rdfs:comment "The Indigenous data governance framework, governance bodies and cultural protocols that apply, as a JSON object." ;
+  schema:domainIncludes schema:Dataset ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:distributionGovernance a rdf:Property ;
+  rdfs:label "distributionGovernance" ;
+  rdfs:comment "How decryption keys reach named recipients when data is shipped outside a broker network, as a JSON object." ;
+  schema:domainIncludes schema:Dataset ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:encryption a rdf:Property ;
+  rdfs:label "encryption" ;
+  rdfs:comment "How the dataset's governed data is encrypted and where keys are released, as a JSON object written by a governance service." ;
+  schema:domainIncludes schema:Dataset ;
+  schema:rangeIncludes rdf:JSON ;
+  vs:term_status "testing" .
+
+fair2:AccessTier a rdfs:Class ;
+  rdfs:label "AccessTier" ;
+  rdfs:comment "An access tier of the FAIR² governance model: L0 (open), L1 (registered) or L2 (credentialed). Named by accessRights; fair2:access states it as a JSON field." ;
+  rdfs:subClassOf skos:Concept ;
+  vs:term_status "testing" .
+
+fair2:L0 a fair2:AccessTier ;
+  rdfs:label "L0 — Open" ;
+  rdfs:comment "No authentication. Data is distributed unencrypted; the governance terms state licence and use conditions but do not gate access." ;
+  vs:term_status "testing" .
+
+fair2:L1 a fair2:AccessTier ;
+  rdfs:label "L1 — Registered" ;
+  rdfs:comment "An authenticated identity and acceptance of the terms." ;
+  vs:term_status "testing" .
+
+fair2:L2 a fair2:AccessTier ;
+  rdfs:label "L2 — Credentialed" ;
+  rdfs:comment "The dataset's credential requirements - by default a signed data use agreement." ;
+  vs:term_status "testing" .
+
+# Agreement Levels 0-6 (deprecated in v1.7.0). Both spellings were in use:
+# AgreementLevel<n> in the level pages, AgreementLevels<n> in the reference
+# example and the documents built from it. dct:isReplacedBy names the
+# tier; the other blocks a level implied are in governance.md.
+
+fair2:AgreementLevel0 a skos:Concept ;
+  rdfs:label "Agreement Level 0 — Embargoed" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L1 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevels0 a skos:Concept ;
+  rdfs:label "Agreement Level 0 — Embargoed" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L1 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevel1 a skos:Concept ;
+  rdfs:label "Agreement Level 1 — Open" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L0 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevels1 a skos:Concept ;
+  rdfs:label "Agreement Level 1 — Open" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L0 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevel2 a skos:Concept ;
+  rdfs:label "Agreement Level 2 — Collaborative" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L0 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevels2 a skos:Concept ;
+  rdfs:label "Agreement Level 2 — Collaborative" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L0 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevel3 a skos:Concept ;
+  rdfs:label "Agreement Level 3 — Trusted" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L2 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevels3 a skos:Concept ;
+  rdfs:label "Agreement Level 3 — Trusted" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L2 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevel4 a skos:Concept ;
+  rdfs:label "Agreement Level 4 — Community-governed" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L1 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevels4 a skos:Concept ;
+  rdfs:label "Agreement Level 4 — Community-governed" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L1 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevel5 a skos:Concept ;
+  rdfs:label "Agreement Level 5 — Secure environment" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L2 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevels5 a skos:Concept ;
+  rdfs:label "Agreement Level 5 — Secure environment" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L2 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevel6 a skos:Concept ;
+  rdfs:label "Agreement Level 6 — Federated compute-to-data" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L2 ;
+  vs:term_status "deprecated" .
+
+fair2:AgreementLevels6 a skos:Concept ;
+  rdfs:label "Agreement Level 6 — Federated compute-to-data" ;
+  rdfs:comment "Deprecated in v1.7.0. Agreement Levels had no machine-readable form beyond a label, and governance services do not read them; state the access tier and governance blocks instead (docs/specification/governance.md). Retained only so existing references resolve." ;
+  dct:isReplacedBy fair2:L2 ;
+  vs:term_status "deprecated" .

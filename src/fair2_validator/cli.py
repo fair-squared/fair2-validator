@@ -11,18 +11,20 @@ from . import shapes as S
 from .validate import validate
 from .croissant import check_croissant
 from .meta import check_meta
+from .governance import check_governance
 from . import llm
 
 
 def _run_detection(target: Path, spec, schemas, do_croissant: bool, croissant_only: bool) -> Report:
-    # `meta` is a non-SHACL pseudo-schema (deterministic _meta.conformsTo check).
+    # `meta` and `governance` are non-SHACL pseudo-schemas (deterministic checks).
     meta_requested = (not croissant_only) and (schemas is None or "meta" in schemas)
-    shacl_schemas = None if schemas is None else [s for s in schemas if s != "meta"]
+    governance_requested = (not croissant_only) and (schemas is None or "governance" in schemas)
+    shacl_schemas = None if schemas is None else [s for s in schemas if s not in ("meta", "governance")]
 
     if croissant_only:
         rep = Report(target=str(target), spec_version=spec.version, scope="croissant")
     elif schemas is not None and not shacl_schemas:
-        rep = Report(target=str(target), spec_version=spec.version, scope="meta")
+        rep = Report(target=str(target), spec_version=spec.version, scope=",".join(schemas))
     else:
         rep = validate(target, spec, shacl_schemas)
 
@@ -35,6 +37,11 @@ def _run_detection(target: Path, spec, schemas, do_croissant: bool, croissant_on
         mok, mfindings = check_meta(target, spec.version)
         rep.meta_ok = mok
         rep.findings.extend(mfindings)
+
+    if governance_requested and spec.governance_schema.is_file():
+        gok, gfindings = check_governance(target, spec.governance_schema)
+        rep.governance_ok = gok
+        rep.findings.extend(gfindings)
     return rep
 
 
@@ -85,6 +92,7 @@ def main(argv: list[str] | None = None) -> int:
         for n in S.schema_names():
             print(f"  {n}")
         print("  meta        (deterministic root _meta.conformsTo check; not SHACL)")
+        print("  governance  (governance blocks against the governance JSON Schema; not SHACL)")
         return 0
 
     if not args.target:

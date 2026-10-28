@@ -1,0 +1,1050 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sen.science/schemas/fair2-json/v1.13",
+  "title": "FAIR² Governance Document (fair2.json)",
+  "description": "Schema for a FAIR² governance document that describes the access, encryption, and policy configuration for a governed dataset. See governance-model.md §14.",
+  "type": "object",
+  "required": [
+    "fair2:id"
+  ],
+  "properties": {
+    "fair2:id": {
+      "type": "string",
+      "pattern": "^fair2:ds:.+$",
+      "description": "Globally unique dataset identifier in the fair2:ds: namespace."
+    },
+    "fair2:version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Schema version this document conforms to (e.g. '1.8')."
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier or URL for the dataset license."
+    },
+    "fair2:access": {
+      "$ref": "#/$defs/AccessBlock",
+      "description": "Access policy. When omitted, the dataset is L0 (open)."
+    },
+    "fair2:constraints": {
+      "$ref": "#/$defs/ConstraintsBlock"
+    },
+    "fair2:embargo": {
+      "$ref": "#/$defs/EmbargoBlock"
+    },
+    "fair2:variableGovernance": {
+      "$ref": "#/$defs/VariableGovernanceBlock"
+    },
+    "fair2:agentGovernance": {
+      "$ref": "#/$defs/AgentGovernanceBlock"
+    },
+    "fair2:consentGovernance": {
+      "$ref": "#/$defs/ConsentGovernanceBlock"
+    },
+    "fair2:indigenousGovernance": {
+      "$ref": "#/$defs/IndigenousGovernanceBlock"
+    },
+    "fair2:encryption": {
+      "$ref": "#/$defs/EncryptionBlock"
+    },
+    "fair2:distributionGovernance": {
+      "$ref": "#/$defs/DistributionGovernanceBlock"
+    },
+    "fair2:temporalGovernance": {
+      "$ref": "#/$defs/TemporalGovernanceBlock"
+    },
+    "fair2:proof": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/DataIntegrityProof"
+      },
+      "minItems": 1,
+      "description": "W3C Data Integrity Proofs — dual-signature chain (author + publisher)."
+    }
+  },
+  "patternProperties": {
+    "^x-": {
+      "description": "Vendor extension (x- prefix)."
+    },
+    "^ext:": {
+      "description": "Community extension (ext: prefix)."
+    },
+    "^fair2:": {
+      "description": "FAIR² lifecycle and system blocks (retraction, tombstone, lifecycle, etc.)."
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "AccessTier": {
+      "type": "string",
+      "enum": [
+        "L0",
+        "L1",
+        "L2"
+      ],
+      "description": "Three-tier access level: L0 (open), L1 (registered), L2 (credentialed)."
+    },
+    "IdentityRequirements": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "acceptedIssuers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "CommunityGovernanceRequirement": {
+      "type": "string",
+      "enum": [
+        "none",
+        "consultationRecommended",
+        "consultationRequired",
+        "communityApprovalRequired"
+      ]
+    },
+    "CommunityGovernanceBlock": {
+      "type": "object",
+      "properties": {
+        "requirement": {
+          "$ref": "#/$defs/CommunityGovernanceRequirement"
+        },
+        "requiredApprovers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "subject_id": {
+                "type": "string",
+                "description": "Provider-agnostic subject identifier (preferred)."
+              },
+              "id": {
+                "type": "string",
+                "description": "Alias for subject_id."
+              },
+              "orcid": {
+                "type": "string",
+                "description": "ORCID identifier (legacy; use subject_id for new documents)."
+              },
+              "role": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "minimumApprovals": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "PurposeBindingBlock": {
+      "type": "object",
+      "properties": {
+        "requirement": {
+          "type": "string",
+          "enum": [
+            "none",
+            "declared",
+            "verified"
+          ]
+        },
+        "allowed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prohibited": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "JurisdictionBlock": {
+      "type": "object",
+      "properties": {
+        "requirement": {
+          "type": "string",
+          "enum": [
+            "none",
+            "required"
+          ]
+        },
+        "accepted": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "ISO 3166-1 alpha-2 country codes or region identifiers (e.g. 'EU')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "QueryTierRule": {
+      "type": "object",
+      "properties": {
+        "granularity": {
+          "type": "string",
+          "enum": [
+            "individual",
+            "grouped",
+            "aggregated",
+            "none"
+          ]
+        },
+        "minGroupSize": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "allowedOperations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deniedColumns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QueryGovernanceBlock": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "linkagePolicy": {
+          "type": "string",
+          "enum": [
+            "unrestricted",
+            "sameStudy",
+            "approved",
+            "prohibited"
+          ]
+        },
+        "studyId": {
+          "type": "string"
+        },
+        "approvedLinkages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "derivationRegistration": {
+          "type": "string",
+          "enum": [
+            "none",
+            "encouraged",
+            "required"
+          ]
+        },
+        "tierRules": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/AccessTier"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/QueryTierRule"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "EnvironmentPolicyBlock": {
+      "type": "object",
+      "properties": {
+        "allowedTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowedEnvironments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dekDelivery": {
+          "type": "string",
+          "default": "environment-bound"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AccessBlock": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "$ref": "#/$defs/AccessTier",
+          "description": "Dataset access tier. When omitted, the dataset is L0 (open).",
+          "default": "L0"
+        },
+        "credentialRequirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Credential bundle the requester must satisfy for L1/L2 access."
+        },
+        "identityAssurance": {
+          "type": "string",
+          "description": "Required assurance level for identity verification (e.g. 'institutional')."
+        },
+        "identity": {
+          "$ref": "#/$defs/IdentityRequirements"
+        },
+        "communityGovernance": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/CommunityGovernanceRequirement"
+            },
+            {
+              "$ref": "#/$defs/CommunityGovernanceBlock"
+            }
+          ],
+          "description": "+G modifier — bare requirement string or structured block with approvers."
+        },
+        "environment": {
+          "type": "string",
+          "enum": [
+            "open",
+            "secureHuman",
+            "computeToData",
+            "hybrid",
+            "verified"
+          ],
+          "default": "open",
+          "description": "+S modifier — execution environment constraint."
+        },
+        "environmentPolicy": {
+          "$ref": "#/$defs/EnvironmentPolicyBlock"
+        },
+        "clientCertification": {
+          "type": "string",
+          "enum": [
+            "none",
+            "required"
+          ],
+          "default": "none",
+          "description": "+C modifier — whether the requesting client must hold a valid broker certification."
+        },
+        "acceptedCertifiers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "DID identifiers of trusted certifiers for +C."
+        },
+        "purposeBinding": {
+          "$ref": "#/$defs/PurposeBindingBlock"
+        },
+        "jurisdiction": {
+          "$ref": "#/$defs/JurisdictionBlock"
+        },
+        "queryGovernance": {
+          "$ref": "#/$defs/QueryGovernanceBlock"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CombinationBlock": {
+      "type": "object",
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": [
+            "unrestricted",
+            "sameSteward",
+            "approved",
+            "prohibited"
+          ]
+        },
+        "approvedDatasets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiresApprovalFrom": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ConstraintsBlock": {
+      "type": "object",
+      "properties": {
+        "aiTraining": {
+          "type": "string",
+          "enum": [
+            "allowed",
+            "restrictedWithConditions",
+            "prohibited"
+          ],
+          "default": "allowed"
+        },
+        "exportRestriction": {
+          "type": "string",
+          "enum": [
+            "none",
+            "aggregated-only",
+            "anonymized-only",
+            "derived-parameters-only"
+          ],
+          "default": "none"
+        },
+        "commercialUse": {
+          "type": "string",
+          "enum": [
+            "allowed",
+            "nonCommercialOnly"
+          ],
+          "default": "allowed"
+        },
+        "combination": {
+          "$ref": "#/$defs/CombinationBlock"
+        }
+      },
+      "additionalProperties": false
+    },
+    "EmbargoBlock": {
+      "type": "object",
+      "properties": {
+        "until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime after which the embargo lifts."
+        },
+        "exemptSubjectIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Subject identifiers exempt from the embargo."
+        }
+      },
+      "additionalProperties": false
+    },
+    "VariableRule": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "$ref": "#/$defs/AccessTier"
+        },
+        "encrypted": {
+          "type": "boolean",
+          "default": true
+        },
+        "exportRestriction": {
+          "type": "string",
+          "enum": [
+            "none",
+            "aggregated-only",
+            "anonymized-only",
+            "derived-parameters-only"
+          ]
+        },
+        "allowedPurposes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prohibitedPurposes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "personalDataCategory": {
+          "type": "string"
+        },
+        "legalBasis": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AssetClassRule": {
+      "type": "object",
+      "required": [
+        "tier"
+      ],
+      "properties": {
+        "tier": {
+          "$ref": "#/$defs/AccessTier"
+        },
+        "formats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PartitionCondition": {
+      "type": "object",
+      "required": [
+        "column",
+        "op",
+        "value"
+      ],
+      "properties": {
+        "column": {
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "=",
+            "!=",
+            "<",
+            ">",
+            "<=",
+            ">=",
+            "in",
+            "not_in"
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "includeNull": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "RecordPartitionRule": {
+      "type": "object",
+      "required": [
+        "name",
+        "tier"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "tier": {
+          "$ref": "#/$defs/AccessTier"
+        },
+        "table": {
+          "type": "string",
+          "description": "Table this partition applies to. Omit only when every table in the dataset carries the partition's criteria columns: a partition that cannot be evaluated against a table refuses the query rather than serving that table unfiltered."
+        },
+        "criteria": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PartitionCondition"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/PartitionCondition"
+              }
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "VariableGovernanceBlock": {
+      "type": "object",
+      "properties": {
+        "floorTier": {
+          "$ref": "#/$defs/AccessTier",
+          "default": "L1",
+          "description": "Minimum tier for any column not explicitly listed."
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/VariableRule"
+          }
+        },
+        "assetClasses": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/AssetClassRule"
+          }
+        },
+        "partitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RecordPartitionRule"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentGovernanceBlock": {
+      "type": "object",
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": [
+            "direct",
+            "planOnly",
+            "planAndApprove",
+            "algorithmicOnly",
+            "prohibited"
+          ],
+          "default": "planAndApprove"
+        },
+        "ceilingTier": {
+          "$ref": "#/$defs/AccessTier",
+          "default": "L2",
+          "description": "Maximum tier an agent can access, regardless of delegation."
+        },
+        "purposeBinding": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "DPV purpose IRIs the agent is permitted to declare."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ConsentGovernanceBlock": {
+      "type": "object",
+      "properties": {
+        "enforcement": {
+          "type": "string",
+          "enum": [
+            "informational",
+            "enforced",
+            "row_level"
+          ],
+          "default": "informational"
+        },
+        "blockThreshold": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Number of unresolved withdrawals that block key release."
+        },
+        "withdrawalPolicy": {
+          "type": "string",
+          "description": "Policy for handling consent withdrawals (e.g. 'block_future_releases')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "IndigenousGovernanceBlock": {
+      "type": "object",
+      "properties": {
+        "framework": {
+          "type": "string",
+          "description": "Named governance framework (e.g. 'OCAP', 'CARE')."
+        },
+        "culturalProtocols": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "months": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 12
+                    }
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": true
+              }
+            ]
+          },
+          "description": "Community-specific cultural protocols (strings or structured objects with type/months/description)."
+        },
+        "governanceBodies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "advisory",
+                  "veto",
+                  "approval"
+                ]
+              }
+            },
+            "additionalProperties": true
+          },
+          "description": "Indigenous governance bodies with roles (advisory, veto, approval)."
+        }
+      },
+      "additionalProperties": true
+    },
+    "KeyBroker": {
+      "type": "object",
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ShamirThreshold": {
+      "type": "object",
+      "required": [
+        "k",
+        "n"
+      ],
+      "properties": {
+        "k": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Reconstruction threshold."
+        },
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of shares."
+        }
+      },
+      "additionalProperties": false
+    },
+    "EncryptionBlock": {
+      "type": "object",
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "description": "Encryption algorithm (e.g. 'AES-256-GCM')."
+        },
+        "keyBrokers": {
+          "type": "array",
+          "description": "Key-broker endpoints. TWO FORMS ARE IN USE AND THEY SHOULD CONVERGE: cookbook.md documents objects ({url, label}), while the server's _build_encryption_block (routes/documents.py) emits bare endpoint strings such as '/api/access/{id}/keys' — a form test_resilience.py asserts on. Both validate here so that real documents are not rejected by a schema describing only one of them; picking a single form is a breaking change either way and is left as an open decision.",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/KeyBroker"
+              },
+              {
+                "type": "string",
+                "minLength": 1,
+                "description": "Broker endpoint, absolute or relative to the API root."
+              }
+            ]
+          }
+        },
+        "governance": {
+          "type": "string",
+          "description": "Key governance model (e.g. 'threshold', 'single')."
+        },
+        "threshold": {
+          "$ref": "#/$defs/ShamirThreshold"
+        },
+        "distributions": {
+          "type": "object",
+          "description": "Per-file encryption record, keyed by distribution filename. A file present here IS encrypted; a file absent from it is not. This is the authoritative per-file signal — it is written by the only component that encrypts, at the moment it does so.",
+          "additionalProperties": {
+            "$ref": "#/$defs/EncryptedDistribution"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "Cryptographic enforcement metadata, written by the server when a document is encrypted (POST /api/documents/{id}/encrypt). Absent on unencrypted documents."
+    },
+    "DistributionRecipient": {
+      "type": "object",
+      "required": [
+        "id",
+        "label"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string"
+        },
+        "tier": {
+          "$ref": "#/$defs/AccessTier"
+        },
+        "keyType": {
+          "type": "string",
+          "default": "KEK"
+        },
+        "enforcementMode": {
+          "type": "string",
+          "enum": [
+            "cryptographic",
+            "contractual"
+          ],
+          "default": "contractual"
+        },
+        "embargo": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "CommunityResolutionBlock": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "date": {
+          "type": "string"
+        },
+        "approvedRecipients": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "signers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "DistributionGovernanceBlock": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "default": "broker-network"
+        },
+        "recipients": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DistributionRecipient"
+          }
+        },
+        "duaReference": {
+          "type": "string"
+        },
+        "withdrawalChannel": {
+          "type": "string"
+        },
+        "communityResolution": {
+          "$ref": "#/$defs/CommunityResolutionBlock"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TemporalPhase": {
+      "type": "object",
+      "properties": {
+        "until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "after": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tier": {
+          "$ref": "#/$defs/AccessTier"
+        },
+        "environment": {
+          "type": "string",
+          "enum": [
+            "open",
+            "secureHuman",
+            "computeToData",
+            "hybrid",
+            "verified"
+          ],
+          "description": "Override environment requirement during this temporal phase."
+        }
+      },
+      "additionalProperties": false
+    },
+    "TemporalGovernanceBlock": {
+      "type": "object",
+      "properties": {
+        "phases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TemporalPhase"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "DataIntegrityProof": {
+      "type": "object",
+      "required": [
+        "type",
+        "cryptosuite",
+        "proofPurpose",
+        "verificationMethod",
+        "proofValue"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "DataIntegrityProof"
+        },
+        "cryptosuite": {
+          "type": "string",
+          "description": "Cryptographic suite (e.g. 'eddsa-jcs-2022')."
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "proofPurpose": {
+          "type": "string"
+        },
+        "verificationMethod": {
+          "type": "string",
+          "description": "DID-based verification method URI."
+        },
+        "proofValue": {
+          "type": "string",
+          "description": "Multibase-encoded proof value (e.g. base58btc for Ed25519)."
+        },
+        "previousProof": {
+          "type": "string",
+          "description": "Reference to a preceding proof in the chain."
+        }
+      },
+      "additionalProperties": true
+    },
+    "EncryptedDistribution": {
+      "type": "object",
+      "description": "How one distribution file is encrypted.",
+      "properties": {
+        "keyId": {
+          "type": "string",
+          "description": "DEK identifier for this file."
+        },
+        "tier": {
+          "$ref": "#/$defs/AccessTier"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "envelope",
+            "parquet-modular"
+          ],
+          "description": "'parquet-modular' is Parquet Modular Encryption — per-column keys within one file, so partial decryption is possible. 'envelope' is a whole-file DEK: all or nothing."
+        },
+        "columns": {
+          "type": "object",
+          "description": "Per-column keys. Only meaningful when format is 'parquet-modular'.",
+          "additionalProperties": {
+            "$ref": "#/$defs/EncryptedColumn"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "EncryptedColumn": {
+      "type": "object",
+      "properties": {
+        "keyId": {
+          "type": "string"
+        },
+        "tier": {
+          "$ref": "#/$defs/AccessTier"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

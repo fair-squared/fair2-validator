@@ -42,6 +42,12 @@ class Spec:
         return self.root / "context" / f"{self.version}.jsonld"
 
     @property
+    def governance_schema(self) -> Path:
+        """The JSON Schema for the governance blocks (`fair2:access`, ...), which the
+        spec vendors from the FAIR² governance model (spec v1.7.0 on)."""
+        return self.root / "schemas" / "fair2-governance.schema.json"
+
+    @property
     def example_file(self) -> Path:
         return self.root / "examples" / "example-1" / "borja2025.json"
 

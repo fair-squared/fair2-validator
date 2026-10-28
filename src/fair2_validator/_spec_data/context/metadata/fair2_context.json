@@ -890,6 +890,46 @@
       },
       "unArchive": {
         "@id": "cr:unArchive"
+      },
+      "fair2:access": {
+        "@id": "fair2:access",
+        "@type": "@json"
+      },
+      "fair2:constraints": {
+        "@id": "fair2:constraints",
+        "@type": "@json"
+      },
+      "fair2:embargo": {
+        "@id": "fair2:embargo",
+        "@type": "@json"
+      },
+      "fair2:variableGovernance": {
+        "@id": "fair2:variableGovernance",
+        "@type": "@json"
+      },
+      "fair2:temporalGovernance": {
+        "@id": "fair2:temporalGovernance",
+        "@type": "@json"
+      },
+      "fair2:agentGovernance": {
+        "@id": "fair2:agentGovernance",
+        "@type": "@json"
+      },
+      "fair2:consentGovernance": {
+        "@id": "fair2:consentGovernance",
+        "@type": "@json"
+      },
+      "fair2:indigenousGovernance": {
+        "@id": "fair2:indigenousGovernance",
+        "@type": "@json"
+      },
+      "fair2:distributionGovernance": {
+        "@id": "fair2:distributionGovernance",
+        "@type": "@json"
+      },
+      "fair2:encryption": {
+        "@id": "fair2:encryption",
+        "@type": "@json"
       }
     }
   ]

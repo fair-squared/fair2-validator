@@ -888,6 +888,46 @@
     },
     "isArray": {
       "@id": "cr:isArray"
+    },
+    "fair2:access": {
+      "@id": "fair2:access",
+      "@type": "@json"
+    },
+    "fair2:constraints": {
+      "@id": "fair2:constraints",
+      "@type": "@json"
+    },
+    "fair2:embargo": {
+      "@id": "fair2:embargo",
+      "@type": "@json"
+    },
+    "fair2:variableGovernance": {
+      "@id": "fair2:variableGovernance",
+      "@type": "@json"
+    },
+    "fair2:temporalGovernance": {
+      "@id": "fair2:temporalGovernance",
+      "@type": "@json"
+    },
+    "fair2:agentGovernance": {
+      "@id": "fair2:agentGovernance",
+      "@type": "@json"
+    },
+    "fair2:consentGovernance": {
+      "@id": "fair2:consentGovernance",
+      "@type": "@json"
+    },
+    "fair2:indigenousGovernance": {
+      "@id": "fair2:indigenousGovernance",
+      "@type": "@json"
+    },
+    "fair2:distributionGovernance": {
+      "@id": "fair2:distributionGovernance",
+      "@type": "@json"
+    },
+    "fair2:encryption": {
+      "@id": "fair2:encryption",
+      "@type": "@json"
     }
   },
   "@id": "https://doi.org/10.71728/r1rj-f947",
@@ -1643,7 +1683,7 @@
   "citationKey": "Borja2024a",
   "conformsTo": [
     "http://mlcommons.org/croissant/1.0",
-    "https://fair2.ai/spec/v1.6.3"
+    "https://fair2.ai/spec/v1.7.0"
   ],
   "contentUrl": "fair2.json",
   "dateCreated": "2025-02-05",
@@ -1864,12 +1904,15 @@
     ]
   },
   "accessRights": {
-    "@id": "https://fair2.ai/ns/AgreementLevels1",
+    "@id": "https://fair2.ai/ns/L0",
     "@type": "DefinedTerm",
-    "name": "Open Access",
-    "definition": "Anyone can access the dataset without registration or identification. No additional agreement is required.",
+    "name": "L0 — Open",
+    "definition": "No authentication is required. The data is distributed unencrypted; the licence and use terms apply, but do not gate access.",
     "note": "By accessing this dataset, you acknowledge that it is made openly available under the stated license. You may use, share, and build upon it in accordance with the license terms, provided that you give appropriate attribution.",
-    "url": "https://fair2.ai/spec/AgreementLevels/1"
+    "url": "https://fair2.ai/spec/v1.7.0/specification/governance/#access-tiers"
+  },
+  "fair2:access": {
+    "tier": "L0"
   },
   "methodSection": [
     {

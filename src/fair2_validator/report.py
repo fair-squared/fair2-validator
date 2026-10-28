@@ -27,13 +27,15 @@ class Report:
     shacl_conforms: Optional[bool] = None
     croissant_ok: Optional[bool] = None
     meta_ok: Optional[bool] = None
+    governance_ok: Optional[bool] = None
     findings: list[Finding] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
         return (self.shacl_conforms is not False
                 and self.croissant_ok is not False
-                and self.meta_ok is not False)
+                and self.meta_ok is not False
+                and self.governance_ok is not False)
 
     def add(self, f: Finding) -> None:
         self.findings.append(f)
@@ -55,6 +57,8 @@ class Report:
             lines.append(f"  Croissant: {'LOADS' if self.croissant_ok else 'FAILED'}")
         if self.meta_ok is not None:
             lines.append(f"  _meta:   {'OK' if self.meta_ok else 'FAILED'}")
+        if self.governance_ok is not None:
+            lines.append(f"  Governance: {'OK' if self.governance_ok else 'FAILED'}")
         lines.append("")
         if not self.findings:
             lines.append("  No issues found. ✅")

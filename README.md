@@ -10,11 +10,21 @@ reconcile the reference example, as a reusable tool:
   spec's shapes — the **full** document or an **individual sub-schema**
   (e.g. just `methodSection` or `dataArticle`) — plus an `mlcroissant` load check
   and the documented [Compatibility Rules 1–6](https://github.com/fair-squared/fair2-spec/blob/main/docs/integration/ml-croissant.md).
-  A separate `meta` check enforces the required `_meta.conformsTo` (which sits
-  outside `@graph`, so SHACL can't see it) and **warns** when a document declares
-  a different spec version than the one the validator is pinned to.
+  A separate `meta` check **warns** when a document declares a different spec
+  version than the one the validator is pinned to, or still carries the `_meta`
+  block the spec removed in v1.4.0.
+- **Governance blocks are checked when present.** `fair2:access`,
+  `fair2:constraints`, `fair2:embargo` and the other
+  [governance blocks](https://github.com/fair-squared/fair2-spec/blob/main/docs/specification/governance.md)
+  are JSON values SHACL cannot see into. Each is checked against the governance
+  JSON Schema the spec vendors, and against the spec's reading rules: a
+  restriction (a modifier, an embargo, consent enforcement) on a dataset whose
+  data is all L0, a restriction with no stated tier, `accessRights` naming a
+  different tier, the deprecated Agreement Levels, and governance keys written
+  without their `fair2:` prefix. Governance is optional: a document without it
+  is not reported.
 - **Findings point at the JSON.** Every finding carries the source-file location
-  to edit (`json: $["@graph"][0].methodSection[0].name`); violations on blank
+  to edit (`json: $.methodSection[0].name`); violations on blank
   nodes are described by their `name`/`@type` and their containing object.
 - **Fixing is agent-driven and confirm-before-apply.** With `--fix`, a model
   analyses the findings, **plans** the change, shows you the operations, and
@@ -27,13 +37,13 @@ reconcile the reference example, as a reusable tool:
 Not on PyPI yet — install from a release tag:
 
 ```bash
-pip install "fair2-validator @ git+https://github.com/fair-squared/fair2-validator@v0.4.3"
+pip install "fair2-validator @ git+https://github.com/fair-squared/fair2-validator@v0.5.0"
 ```
 
 or, as a dependency in `pyproject.toml`:
 
 ```toml
-"fair2-validator @ git+https://github.com/fair-squared/fair2-validator@v0.4.3"
+"fair2-validator @ git+https://github.com/fair-squared/fair2-validator@v0.5.0"
 ```
 
 Every release also attaches the wheel to its
@@ -71,6 +81,9 @@ fair2-validate path/to/fair2.json
 # only specific sub-schema(s)
 fair2-validate path/to/fair2.json --schema methodSection,dataArticle
 
+# only the governance blocks
+fair2-validate path/to/fair2.json --schema governance
+
 # only the mlcroissant + Rules checks
 fair2-validate path/to/fair2.json --croissant-only
 
@@ -91,8 +104,12 @@ fair2-validate path/to/fair2.json --fix --provider openai
 
 `dataset` (full), `distribution`, `recordSet`, `field`, `methodSection`,
 `methodStep`, `substep`, `dataArticle`, `dataPortal`, `dataArchive`,
-`contributor`, `creator`, `spatialCoverage`, `accessRights`, `changeLog`,
-`domain`, `funding`, `subjectOf`, `provenance`.
+`attribution`, `certification`, `creator`, `spatialCoverage`, `accessRights`,
+`changeLog`, `domain`, `funding`, `subjectOf`, `provenance`.
+
+Two more names select checks that are not SHACL: `meta` (the declared spec
+version) and `governance` (the governance blocks). Both run in a full check;
+`--schema governance` runs the governance check alone.
 
 Under the hood, a sub-schema loads only its shape file plus the transitive
 `sh:node` dependency closure. Shapes with a `sh:targetClass` auto-target their
