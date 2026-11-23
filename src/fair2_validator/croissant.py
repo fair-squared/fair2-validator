@@ -85,7 +85,9 @@ def _ref_cycles(doc: dict) -> list[list[str]]:
 
     def dfs(u, stack):
         color[u] = GREY; stack.append(u)
-        for v in edges.get(u, ()):
+        # In the ids' order: a set's order changes with the hash seed, and with it
+        # which cycles the search finds
+        for v in sorted(edges.get(u, ())):
             if v in edges:
                 if color.get(v, WHITE) == GREY:
                     cycles.append(stack[stack.index(v):] + [v])

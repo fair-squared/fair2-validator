@@ -1,11 +1,16 @@
 """Detection tests — run offline against the pinned fair2-spec golden example."""
 import json
+import os
 import re
+import subprocess
+import sys
+import textwrap
+
 import pytest
 
 from fair2_validator.spec import find_spec, SpecNotFound
 from fair2_validator.validate import validate
-from fair2_validator.croissant import static_rules, check_croissant
+from fair2_validator.croissant import _ref_cycles, static_rules, check_croissant
 from fair2_validator.meta import check_meta
 from fair2_validator import shapes as S
 
@@ -148,6 +153,46 @@ def test_croissant_cycle_detected(spec, golden, tmp_path):
     broken.write_text(json.dumps(doc))
     findings = static_rules(broken)
     assert any("cycle" in f.message.lower() for f in findings), [f.message for f in findings]
+
+
+# Places that point at each other, so that which cycles the search finds depends on the order it
+# follows the references in
+CYCLES = {
+    "@context": {},
+    "spatialCoverage": [
+        {"@id": "#a", "name": "a", "containsPlace": [{"@id": "#b"}, {"@id": "#c"}, {"@id": "#a"}]},
+        {"@id": "#b", "name": "b", "containsPlace": [{"@id": "#c"}, {"@id": "#a"}]},
+        {"@id": "#c", "name": "c", "containsPlace": [{"@id": "#a"}, {"@id": "#b"}]},
+    ],
+}
+
+
+def test_croissant_cycles_follow_the_ids_order():
+    # From a, its references sorted: a itself, then b, and from b: a, then c, and from c: a,
+    # then b. a → c isn't followed, c being done by then
+    assert _ref_cycles(CYCLES) == [
+        ["#a", "#a"],
+        ["#a", "#b", "#a"],
+        ["#a", "#b", "#c", "#a"],
+        ["#b", "#c", "#b"],
+    ]
+
+
+def test_croissant_cycles_dont_change_with_the_hash_seed():
+    script = textwrap.dedent(f"""
+        import json
+        from fair2_validator.croissant import _ref_cycles
+        print(json.dumps(_ref_cycles({CYCLES!r})))
+    """)
+    outputs = {
+        subprocess.run(
+            [sys.executable, "-c", script],
+            env={**os.environ, "PYTHONHASHSEED": seed},
+            capture_output=True, text=True, check=True,
+        ).stdout
+        for seed in ("1", "2", "3", "4", "5")
+    }
+    assert len(outputs) == 1
 
 
 def test_golden_croissant_loads(spec, golden):

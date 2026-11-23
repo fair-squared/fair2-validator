@@ -1,11 +1,19 @@
 """Structured findings and reports for FAIR2 validation."""
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Optional
 
 
 SEVERITY_ORDER = {"violation": 0, "warning": 1, "info": 2}
+# The checks in the order they run
+SOURCE_ORDER = {"shacl": 0, "croissant": 1, "rule": 2, "meta": 3, "governance": 4}
+
+
+def _natural(text: str) -> tuple:
+    """`$.distribution[2]` before `$.distribution[10]`: numbers compared as numbers."""
+    return tuple((0, int(p), "") if p.isdigit() else (1, 0, p) for p in re.split(r"(\d+)", text))
 
 
 @dataclass
@@ -17,6 +25,11 @@ class Finding:
     json_path: str = ""  # location in the source JSON, e.g. $["@graph"][0].name
     rule: str = ""       # e.g. "mlcroissant Rule 2"
     suggestion: str = "" # advisory hint (never auto-applied)
+
+
+def _order(f: Finding) -> tuple:
+    return (SEVERITY_ORDER.get(f.severity, 9), SOURCE_ORDER.get(f.source, 9), f.source,
+            _natural(f.json_path), _natural(f.locus), f.rule, f.message, f.suggestion)
 
 
 @dataclass
@@ -41,7 +54,9 @@ class Report:
         self.findings.append(f)
 
     def sorted_findings(self) -> list[Finding]:
-        return sorted(self.findings, key=lambda f: SEVERITY_ORDER.get(f.severity, 9))
+        """By severity, then by check, then by where they point in the JSON. A full order:
+        pyshacl reports its results in an order that changes from run to run."""
+        return sorted(self.findings, key=_order)
 
     def render(self) -> str:
         icon = {"violation": "✗", "warning": "!", "info": "i"}
