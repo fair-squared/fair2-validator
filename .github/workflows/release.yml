@@ -24,13 +24,23 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive   # need fair2-spec to vendor into the package
+          # Full clones: the spec's version is its tag, which a shallow clone of the submodule
+          # only brings while the pinned commit is the tip of the spec's main
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Vendor the pinned spec into the package
-        run: python scripts/sync_spec.py
+        run: |
+          python scripts/sync_spec.py
+          # A release states the spec's version: never an untagged or unknown one
+          version="$(cat src/fair2_validator/_spec_data/VERSION)"
+          case "$version" in
+            v[0-9]*.[0-9]*.[0-9]*) echo "Vendored spec $version" ;;
+            *) echo "::error::The pinned spec isn't on a tag (VERSION: $version)"; exit 1 ;;
+          esac
 
       - name: Build sdist + wheel
         run: |
